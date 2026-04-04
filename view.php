@@ -4,6 +4,7 @@ require_once __DIR__ . '/helpers.php';
 
 $config = loadConfig();
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
+$maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
 
 // Get the image path from the URL parameter
 $imagePath = isset($_GET['show']) ? $_GET['show'] : '';
@@ -35,13 +36,15 @@ if ($imageInfo === false) {
     die('Not a valid image file');
 }
 
-$mimeType = $imageInfo['mime'];
+$encodedPath = str_replace('%2F', '/', rawurlencode($imagePath));
+$baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
 ?>
 <!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="<?php echo $baseUrl; ?>" />
     <title><?php echo htmlspecialchars($title) . ': ' . htmlspecialchars($imagePath); ?></title>
     <style>
       body {
@@ -49,12 +52,17 @@ $mimeType = $imageInfo['mime'];
         margin: 0;
       }
       .image {
-          width: 100%;
-          height: auto;
+            width: 100%;
+            height: auto;
+            margin: 0 auto;
+            display: block;
+<?php if ($maxWidth) { ?>
+            max-width: <?= $maxWidth ?>px;
+<?php } ?>
       }
     </style>
   </head>
   <body>
-    <img class="image" src="<?php echo htmlspecialchars($imagePath); ?>" border="0" />
+    <img class="image" src="<?php echo $encodedPath; ?>" border="0" />
   </body>
 </html>
