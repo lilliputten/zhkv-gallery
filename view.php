@@ -67,9 +67,37 @@ $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') 
             background-size: 100% auto;
             background-repeat: no-repeat;
       }
+      .back-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            opacity: 0.5;
+      }
+      .back-button:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+      }
+      .back-button:active {
+            transform: scale(0.95);
+      }
     </style>
   </head>
   <body>
     <img class="image" src="<?php echo $encodedPath; ?>" border="0" />
+    <a href="<?php echo $baseUrl; ?>" class="back-button" title="Back to the Gallery">←</a>
   </body>
 </html>
