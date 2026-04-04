@@ -1,6 +1,6 @@
 *.log
 .config.local.json
 .thumbs
-*.cache
+.cache*
 *example*
 *Previews*

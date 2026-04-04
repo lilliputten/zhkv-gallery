@@ -7,7 +7,7 @@ $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $thumbSize = isset($config['thumbSize']) ? $config['thumbSize'] : 150;
 $useRedirectMode = isset($_GET['redirect']) ? ($_GET['redirect'] === '1' || $_GET['redirect'] === 'true') : (isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false);
 $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
-$indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.index.cache';
+$indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
 
 $cacheFile = $indexCache ? __DIR__ . '/' . $indexCache : "";
 $scanResults = [];
@@ -39,7 +39,7 @@ if (file_exists($cacheFile)) {
             }
 
             // Get relative path from base directory
-            $relativePath = str_replace($baseDir . DIRECTORY_SEPARATOR, '', $dirPath);
+            $relativePath = str_replace('\\', '/', str_replace($baseDir . DIRECTORY_SEPARATOR, '', $dirPath));
 
             // Scan for images in this directory
             $images = [];
@@ -51,7 +51,7 @@ if (file_exists($cacheFile)) {
                         continue;
                     }
 
-                    $filePath = $dirPath . DIRECTORY_SEPARATOR . $file;
+                    $filePath = $dirPath . '/' . $file;
 
                     // Check if it's a file (not directory)
                     if (!is_file($filePath)) {
@@ -64,7 +64,7 @@ if (file_exists($cacheFile)) {
 
                     if (in_array($extension, $supportedExtensions)) {
                         $imageName = isset($pathInfo['filename']) ? $pathInfo['filename'] : $file;
-                        $imageRelativePath = str_replace($baseDir . DIRECTORY_SEPARATOR, '', $filePath);
+                        $imageRelativePath = str_replace('\\', '/', str_replace($baseDir . DIRECTORY_SEPARATOR, '', $filePath));
 
                         $images[] = [
                             'name' => $imageName,
@@ -97,7 +97,7 @@ if (file_exists($cacheFile)) {
 
     // Save to cache
     if ($cacheFile) {
-        file_put_contents($cacheFile, json_encode($scanResults, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        file_put_contents($cacheFile, json_encode($scanResults, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 }
 ?>

@@ -24,7 +24,7 @@ demo-site/
 ├── .htaccess           # Apache URL rewriting rules
 ├── .config.json        # Default configuration file
 ├── .config.local.json  # Optional local configuration overrides (gitignored)
-├── .index.cache        # Cached directory scan results (auto-generated, configurable)
+├── .cache.index        # Cached directory scan results (auto-generated, configurable)
 ├── .thumbs/            # Cached thumbnail images (auto-generated, configurable)
 ├── example/            # Example HTML template
 │   └── index.html
@@ -43,7 +43,7 @@ demo-site/
 - Groups images by folder with section headers
 - Displays square thumbnails in a responsive grid
 - Links to full-size image viewer
-- Caches scan results to configurable cache file (default: `.index.cache`) for faster subsequent loads
+- Caches scan results to configurable cache file (default: `.cache.index`) for faster subsequent loads
 - Supports toggle between query string and clean URL modes
 - Sorts folders and images alphabetically (case-insensitive)
 
@@ -192,7 +192,7 @@ RewriteRule ^view/(.+)$ view.php?show=$1 [QSA,L]
     "thumbSize": 150,
     "useRedirectMode": false,
     "thumbsDir": ".thumbs",
-    "indexCache": ".index.cache"
+    "indexCache": ".cache.index"
 }
 ```
 
@@ -201,7 +201,7 @@ RewriteRule ^view/(.+)$ view.php?show=$1 [QSA,L]
 - `thumbSize` (integer): Size in pixels for square thumbnails (default: 150)
 - `useRedirectMode` (boolean): Default URL mode for image links (default: false)
 - `thumbsDir` (string): Directory name for storing cached thumbnails (default: ".thumbs")
-- `indexCache` (string): Filename for directory scan cache (default: ".index.cache")
+- `indexCache` (string): Filename for directory scan cache (default: ".cache.index")
 
 ### `.config.local.json` - Local Overrides (Optional)
 
@@ -227,7 +227,7 @@ Create this file to override default settings without modifying `.config.json`. 
 
 **Purpose**: Avoids repeated filesystem scans on every page load.
 
-**Configuration**: Filename defined by `indexCache` parameter in config (default: `.index.cache`)
+**Configuration**: Filename defined by `indexCache` parameter in config (default: `.cache.index`)
 
 **Format**: JSON file containing structured directory and image data
 
@@ -373,8 +373,8 @@ http://localhost/thumb.php?show=260330-Previews-002/header%201.png
 ```bash
 # For default configuration:
 chmod 755 .thumbs/
-chmod 644 .index.cache
-chown www-data:www-data .thumbs/ .index.cache  # Linux
+chmod 644 .cache.index
+chown www-data:www-data .thumbs/ .cache.index  # Linux
 
 # Or for custom paths defined in config:
 chmod 755 <thumbsDir>/
