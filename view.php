@@ -2,12 +2,13 @@
 // Load helpers
 require_once __DIR__ . '/helpers.php';
 
-$config = loadConfig();
-$title = isset($config['title']) ? $config['title'] : 'Image Gallery';
-$maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
-
 // Get the image path from the URL parameter
 $imagePath = isset($_GET['show']) ? $_GET['show'] : '';
+
+
+$config = loadConfig($imagePath);
+$title = isset($config['title']) ? $config['title'] : 'Image Gallery';
+$maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
 
 // Security: Validate the path to prevent directory traversal attacks
 if (empty($imagePath)) {

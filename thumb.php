@@ -3,12 +3,12 @@
 // Load helpers
 require_once __DIR__ . '/helpers.php';
 
+// Get the image path from the URL parameter
+$imagePath = isset($_GET['show']) ? $_GET['show'] : '';
+
 $config = loadConfig();
 $thumbSize = isset($config['thumbSize']) ? $config['thumbSize'] : 150;
 $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs.cache';
-
-// Get the image path from the URL parameter
-$imagePath = isset($_GET['show']) ? $_GET['show'] : '';
 
 // Security: Validate the path to prevent directory traversal attacks
 if (empty($imagePath)) {
