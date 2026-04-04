@@ -1,0 +1,5 @@
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Redirect view/{image} to view.php?show={image}
+RewriteRule ^view/(.+)$ view.php?show=$1 [QSA,L]
