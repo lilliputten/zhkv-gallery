@@ -5,9 +5,12 @@ require_once __DIR__ . '/helpers.php';
 
 // Get the image path from the URL parameter
 $imagePath = isset($_GET['show']) ? $_GET['show'] : '';
+$full = isset($_GET['mode']) ? $_GET['mode'] === 'full' : false;
 
 $config = loadConfig();
-$thumbSize = isset($config['thumbSize']) ? $config['thumbSize'] : 150;
+$thumbSize = isset($_GET['size']) ? (int)$_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
+$previewSize = isset($config['previewSize']) ? $config['previewSize'] : 800;
+$maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : null;
 $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs.cache';
 
 // Security: Validate the path to prevent directory traversal attacks
@@ -55,7 +58,26 @@ $pathInfo = pathinfo($imagePath);
 $originalName = $pathInfo['filename'];
 $fileExt = strtolower($pathInfo['extension']);
 $currentHash = substr(md5_file($fullPath), 0, 8);
-$cacheFilename = $originalName . '_' . $thumbSize . 'x' . $thumbSize . '-' . $currentHash . '.webp';
+
+// Calculate dimensions
+$srcRatio = $originalWidth / $originalHeight;
+
+if ($full) {
+    // Scale so the minimum dimension equals $previewSize
+    $scale = max($previewSize / $originalWidth, $previewSize / $originalHeight);
+    $newWidth = floor($originalWidth * $scale);
+    $newHeight = floor($originalHeight * $scale);
+    // Crop height from the top if it exceeds $maxThumbHeight
+    $maxThumbHeight = $maxHeightRatio ? $newWidth * $maxHeightRatio : null;
+    if ($maxThumbHeight && $newHeight > $maxThumbHeight) {
+        $newHeight = (int)$maxThumbHeight;
+    }
+} else {
+    $newWidth = $thumbSize;
+    $newHeight = $thumbSize;
+}
+
+$cacheFilename = $originalName . '-' . $currentHash . '-' . $newWidth . '.webp';
 $cachePath = $thumbsPath . '/' . $cacheFilename;
 
 // Check if cached thumbnail exists (hash in filename guarantees freshness)
@@ -65,10 +87,6 @@ if (file_exists($cachePath)) {
     readfile($cachePath);
     exit;
 }
-
-// Thumbnail needs to be generated
-$newWidth = $thumbSize;
-$newHeight = $thumbSize;
 
 // Try GD library first
 if (extension_loaded('gd')) {
@@ -105,33 +123,39 @@ if (extension_loaded('gd')) {
         imagefill($thumbnail, 0, 0, $transparent);
     }
 
-    // Calculate cropping to make it square (center crop)
-    $srcRatio = $originalWidth / $originalHeight;
-    $dstRatio = 1; // Square
-
-    if ($srcRatio > $dstRatio) {
-        // Image is wider than square - crop width
-        $cropWidth = floor($originalHeight);
-        $cropHeight = $originalHeight;
-        $cropX = floor(($originalWidth - $cropWidth) / 2);
-        $cropY = 0;
-    } else {
-        // Image is taller than square - crop height
-        $cropWidth = $originalWidth;
-        $cropHeight = floor($originalWidth);
+    if ($full) {
         $cropX = 0;
-        $cropY = 0; // Crop to the top. To center, use: floor(($originalHeight - $cropHeight) / 2);
+        $cropY = 0;
+        $cropWidth = $originalWidth;
+        $cropHeight = min($originalHeight, (int)floor($newHeight / $scale));
+    } else {
+        // Crop to maintain aspect ratio only for non-full mode
+        if ($srcRatio > $dstRatio) {
+            // Image is wider than square - crop width
+            $cropWidth = $originalHeight;
+            $cropHeight = $originalHeight;
+            $cropX = floor(($originalWidth - $cropWidth) / 2);
+            $cropY = 0;
+        } else {
+            // Image is taller than square - crop height
+            $cropWidth = $originalWidth;
+            $cropHeight = $originalWidth;
+            $cropX = 0;
+            $cropY = 0; // Crop to the top
+            // $cropY = floor(($originalHeight - $cropHeight) / 2); // Crop to the center
+        }
     }
 
-    // Resize and crop the image to square
+    // Resize the image
     imagecopyresampled(
         $thumbnail,
         $sourceImage,
-        0, 0, $cropX, $cropY,
-        $newWidth,
-        $newHeight,
-        $cropWidth,
-        $cropHeight
+        0, 0, // destination point
+        $cropX, $cropY, // source point
+        $newWidth, // Destination width
+        $newHeight, // Destination height
+        $cropWidth, // Source width
+        $cropHeight // Source height
     );
 
     // Save thumbnail to cache and output
@@ -149,8 +173,14 @@ elseif (class_exists('Imagick')) {
     try {
         $imagick = new Imagick($fullPath);
 
-        // Crop to square from center
-        $imagick->cropThumbnailImage($thumbSize, $thumbSize);
+        // Scale or crop based on mode
+        if ($full) {
+            // Scale proportionally without cropping
+            $imagick->thumbnailImage($newWidth, $newHeight, true);
+        } else {
+            // Crop to square from center
+            $imagick->cropThumbnailImage($thumbSize, $thumbSize);
+        }
         $imagick->setImagePage($thumbSize, $thumbSize, 0, 0);
         $imagick->setImageFormat('webp');
 
@@ -166,6 +196,7 @@ elseif (class_exists('Imagick')) {
         die('ImageMagick error: ' . $e->getMessage());
     }
 }
+
 // No image library available
 else {
     die('Error: No image processing library available. Please enable either GD extension or ImageMagick in your PHP configuration.<br><br>' .

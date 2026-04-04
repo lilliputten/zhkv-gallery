@@ -5,10 +5,10 @@ require_once __DIR__ . '/helpers.php';
 // Get the image path from the URL parameter
 $imagePath = isset($_GET['show']) ? $_GET['show'] : '';
 
-
 $config = loadConfig($imagePath);
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
+$previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 
 // Security: Validate the path to prevent directory traversal attacks
 if (empty($imagePath)) {
@@ -38,6 +38,7 @@ if ($imageInfo === false) {
 }
 
 $encodedPath = str_replace('%2F', '/', rawurlencode($imagePath));
+$previewUrl = 'thumb.php?mode=full&size=' . $previewSize . '&show=' . $encodedPath;
 $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
 ?>
 <!DOCTYPE html>
@@ -47,6 +48,7 @@ $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="<?php echo $baseUrl; ?>" />
     <title><?php echo htmlspecialchars($title) . ': ' . htmlspecialchars($imagePath); ?></title>
+    <link rel="preload" href="<?= $previewUrl ?>" as="image">
     <style>
       body {
         padding: 0;
@@ -60,6 +62,10 @@ $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') 
 <?php if ($maxWidth) { ?>
             max-width: <?= $maxWidth ?>px;
 <?php } ?>
+            background-image: url("<?= $previewUrl ?>");
+            background-position: center top;
+            background-size: 100% auto;
+            background-repeat: no-repeat;
       }
     </style>
   </head>

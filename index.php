@@ -5,6 +5,7 @@ require_once __DIR__ . '/helpers.php';
 $config = loadConfig();
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $thumbSize = isset($config['thumbSize']) ? $config['thumbSize'] : 150;
+$previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $useRedirectMode = isset($_GET['redirect']) ? ($_GET['redirect'] === '1' || $_GET['redirect'] === 'true') : (isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false);
 $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
 $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
@@ -141,6 +142,9 @@ if (file_exists($cacheFile)) {
                             // Use str_replace to keep slashes unencoded
                             $encodedPath = str_replace('%2F', '/', rawurlencode($image['path']));
 
+                            $previewUrl = 'thumb.php?mode=full&size=' . $previewSize . '&show=' . $encodedPath;
+                            $thumbUrl = 'thumb.php?show=' . $encodedPath;
+
                             if ($useRedirectMode) {
                                 $viewUrl = 'view/' . $encodedPath;
                             } else {
@@ -149,9 +153,9 @@ if (file_exists($cacheFile)) {
                             ?>
                             <a href="<?= $viewUrl ?>">
                                 <img
-                                    src="thumb.php?show=<?= $encodedPath ?>"
+                                    src="<?= $previewUrl ?>"
                                     alt="<?= htmlspecialchars($image['name']) ?>"
-                                    style="height: <?= htmlspecialchars($thumbSize) ?>px"
+                                    style="height: <?= htmlspecialchars($thumbSize) ?>px; width: <?= htmlspecialchars($thumbSize) ?>px"
                                     loading="lazy"
                                 />
                                 <div class="image-name"><?= htmlspecialchars($image['name']) ?></div>
