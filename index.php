@@ -63,7 +63,7 @@ if (file_exists($cacheFile)) {
                     $extension = strtolower(isset($pathInfo['extension']) ? $pathInfo['extension'] : '');
 
                     if (in_array($extension, $supportedExtensions)) {
-                        $imageName = isset($pathInfo['filename']) ? $pathInfo['filename'] : $file;
+                        $imageName = str_replace('-', ' ', isset($pathInfo['filename']) ? $pathInfo['filename'] : $file);
                         $imageRelativePath = str_replace('\\', '/', str_replace($baseDir . DIRECTORY_SEPARATOR, '', $filePath));
 
                         $images[] = [
@@ -83,7 +83,7 @@ if (file_exists($cacheFile)) {
                 });
 
                 $scanResults[$relativePath] = [
-                    'name' => $dirName,
+                    'name' => str_replace('-', ' ', $dirName),
                     'images' => $images
                 ];
             }

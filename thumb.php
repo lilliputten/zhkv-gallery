@@ -120,7 +120,7 @@ if (extension_loaded('gd')) {
         $cropWidth = $originalWidth;
         $cropHeight = floor($originalWidth);
         $cropX = 0;
-        $cropY = floor(($originalHeight - $cropHeight) / 2);
+        $cropY = 0; // Crop to the top. To center, use: floor(($originalHeight - $cropHeight) / 2);
     }
 
     // Resize and crop the image to square
