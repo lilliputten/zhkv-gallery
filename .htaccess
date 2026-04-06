@@ -7,5 +7,14 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}\.php -f
 RewriteRule ^([^/]+)/?$ $1.php [L]
 
-# Redirect view/{image} to view.php?show={image}
-RewriteRule ^view/(.+)$ view.php?show=$1 [QSA,NE,L]
+# Redirect view/{image} to view.php?image={image}
+RewriteRule ^view/(.+)$ view.php?image=$1 [QSA,NE,L]
+
+# Redirect thumb/{image} to thumb.php?image={image}
+RewriteRule ^thumb/(.+)$ thumb.php?image=$1 [QSA,NE,L]
+
+# Redirect preview/{image} to thumb.php?mode=preview&image={image}
+RewriteRule ^preview/(.+)$ thumb.php?mode=preview&image=$1 [QSA,NE,L]
+
+# Redirect full/{image} to thumb.php?mode=full&image={image}
+RewriteRule ^full/(.+)$ thumb.php?mode=full&image=$1 [QSA,NE,L]

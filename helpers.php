@@ -38,6 +38,13 @@ function loadFolderConfig($folderPath, &$config, $configName = '.config') {
  * @param string $imagePath Optional path to an image file to load folder-specific config
  * @return array Merged configuration array
  */
+function currentUrl() {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        ? 'https'
+        : ((!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http');
+    return $protocol . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+}
+
 function faviconTag() {
     if (file_exists(__DIR__ . '/favicon.ico')) {
         echo '<link rel="icon" href="favicon.ico" type="image/x-icon" />' . "\n";

@@ -3,19 +3,26 @@
 // Load helpers
 require_once __DIR__ . '/helpers.php';
 
+function thumbError($message, $code = 400) {
+    http_response_code($code);
+    header('Content-Type: text/plain');
+    exit($message);
+}
+
 // Get the image path from the URL parameter
-$imagePath = isset($_GET['show']) ? $_GET['show'] : '';
+$imagePath = isset($_GET['image']) ? $_GET['image'] : '';
+$preview = isset($_GET['mode']) ? $_GET['mode'] === 'preview' : false;
 $full = isset($_GET['mode']) ? $_GET['mode'] === 'full' : false;
 
 $config = loadConfig();
-$thumbSize = isset($_GET['size']) ? (int)$_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
+$thumbSize = isset($_GET['size']) ? (int) $_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : null;
 $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs';
 
 // Security: Validate the path to prevent directory traversal attacks
 if (empty($imagePath)) {
-    die('No image specified');
+    thumbError('No image specified');
 }
 
 // Decode URL encoding (e.g., %20 becomes space)
@@ -26,18 +33,18 @@ $basePath = realpath(__DIR__);
 $fullPath = realpath(__DIR__ . '/' . $imagePath);
 
 if ($fullPath === false || strpos($fullPath, $basePath) !== 0) {
-    die('Invalid image path');
+    thumbError('Invalid image path', 403);
 }
 
 // Check if file exists
 if (!file_exists($fullPath)) {
-    die('Image not found: ' . htmlspecialchars($imagePath));
+    thumbError('Image not found: ' . $imagePath, 404);
 }
 
 // Get image info
 $imageInfo = getimagesize($fullPath);
 if ($imageInfo === false) {
-    die('Not a valid image file');
+    thumbError('Not a valid image file', 422);
 }
 
 $mimeType = $imageInfo['mime'];
@@ -62,29 +69,33 @@ $currentHash = substr(md5_file($fullPath), 0, 8);
 // Calculate dimensions
 $srcRatio = $originalWidth / $originalHeight;
 
-if ($full) {
+if ($preview || $full) {
     // Scale so the minimum dimension equals $previewSize
     $scale = max($previewSize / $originalWidth, $previewSize / $originalHeight);
     $newWidth = floor($originalWidth * $scale);
     $newHeight = floor($originalHeight * $scale);
-    // Crop height from the top if it exceeds $maxThumbHeight
-    $maxThumbHeight = $maxHeightRatio ? $newWidth * $maxHeightRatio : null;
+    // Crop height from the top if it exceeds $maxThumbHeight (preview mode only, not full)
+    $maxThumbHeight = (!$full && $maxHeightRatio) ? $newWidth * $maxHeightRatio : null;
     if ($maxThumbHeight && $newHeight > $maxThumbHeight) {
-        $newHeight = (int)$maxThumbHeight;
+        $newHeight = (int) $maxThumbHeight;
     }
 } else {
     $newWidth = $thumbSize;
     $newHeight = $thumbSize;
 }
 
-$cacheFilename = $originalName . '-' . $currentHash . '-' . ($full ? 'full' : 'thumb') . '-' . $newWidth . 'x' . $newHeight . '.webp';
+$cacheFilename = $originalName . '-' . $currentHash . '-' . ($preview ? ($full ? 'full' : 'preview') : 'thumb') . '-' . $newWidth . 'x' . $newHeight . '.webp';
 $cachePath = $thumbsPath . '/' . $cacheFilename;
 
 // Check if cached thumbnail exists (hash in filename guarantees freshness)
 if (file_exists($cachePath)) {
+    $resolvedCache = realpath($cachePath);
+    if ($resolvedCache === false || strpos($resolvedCache, realpath($thumbsPath)) !== 0) {
+        thumbError('Invalid cache path', 403);
+    }
     header('Content-Type: image/webp');
     header('Cache-Control: public, max-age=86400');
-    readfile($cachePath);
+    readfile($resolvedCache);
     exit;
 }
 
@@ -105,11 +116,11 @@ if (extension_loaded('gd')) {
             $sourceImage = imagecreatefromwebp($fullPath);
             break;
         default:
-            die('Unsupported image format');
+            thumbError('Unsupported image format', 415);
     }
 
     if (!$sourceImage) {
-        die('Failed to create image resource');
+        thumbError('Failed to create image resource', 500);
     }
 
     // Create square thumbnail image
@@ -123,18 +134,18 @@ if (extension_loaded('gd')) {
         imagefill($thumbnail, 0, 0, $transparent);
     }
 
-    if ($full) {
+    if ($preview || $full) {
         $cropX = 0;
         $cropY = 0;
         $cropWidth = $originalWidth;
-        $cropHeight = min($originalHeight, (int)floor($newHeight / $scale));
+        $cropHeight = min($originalHeight, (int) floor($newHeight / $scale));
     } else {
         // Square crop for thumb mode
         if ($srcRatio > 1) {
             // Wider than tall: crop sides
             $cropHeight = $originalHeight;
             $cropWidth = $originalHeight;
-            $cropX = (int)floor(($originalWidth - $cropWidth) / 2);
+            $cropX = (int) floor(($originalWidth - $cropWidth) / 2);
             $cropY = 0;
         } else {
             // Taller than wide: crop bottom
@@ -149,8 +160,10 @@ if (extension_loaded('gd')) {
     imagecopyresampled(
         $thumbnail,
         $sourceImage,
-        0, 0, // destination point
-        $cropX, $cropY, // source point
+        0,
+        0, // destination point
+        $cropX,
+        $cropY, // source point
         $newWidth, // Destination width
         $newHeight, // Destination height
         $cropWidth, // Source width
@@ -162,10 +175,6 @@ if (extension_loaded('gd')) {
     header('Content-Type: image/webp');
     header('Cache-Control: public, max-age=86400');
     imagewebp($thumbnail, null, 85);
-
-    // Free memory
-    imagedestroy($sourceImage);
-    imagedestroy($thumbnail);
 }
 // Try ImageMagick as fallback
 elseif (class_exists('Imagick')) {
@@ -173,7 +182,7 @@ elseif (class_exists('Imagick')) {
         $imagick = new Imagick($fullPath);
 
         // Scale or crop based on mode
-        if ($full) {
+        if ($preview || $full) {
             // Scale proportionally without cropping
             $imagick->thumbnailImage($newWidth, $newHeight, true);
         } else {
@@ -192,17 +201,11 @@ elseif (class_exists('Imagick')) {
         echo $imagick->getImageBlob();
         $imagick->destroy();
     } catch (Exception $e) {
-        die('ImageMagick error: ' . $e->getMessage());
+        thumbError('ImageMagick error: ' . $e->getMessage(), 500);
     }
 }
 
 // No image library available
 else {
-    die('Error: No image processing library available. Please enable either GD extension or ImageMagick in your PHP configuration.<br><br>' .
-        'To enable GD:<br>' .
-        '1. Open your php.ini file<br>' .
-        '2. Find the line: ;extension=gd<br>' .
-        '3. Remove the semicolon: extension=gd<br>' .
-        '4. Restart your web server');
+    thumbError('No image processing library available. Enable GD or ImageMagick in php.ini.', 500);
 }
-?>

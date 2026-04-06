@@ -103,7 +103,7 @@ if (file_exists($cacheFile)) {
     }
 }
 
-$currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+$currentUrl = currentUrl();
 ?>
 <!DOCTYPE html>
 <html>
@@ -134,8 +134,12 @@ $currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 
     if ($firstImagePath):
         $encodedPath = str_replace('%2F', '/', rawurlencode($firstImagePath));
-        $previewUrl = 'thumb.php?mode=full&size=' . $previewSize . '&show=' . $encodedPath;
-        $thumbUrl = 'thumb.php?show=' . $encodedPath;
+        $previewUrl = 'thumb.php?mode=preview&image=' . $encodedPath;
+        $thumbUrl   = 'thumb.php?image='               . $encodedPath;
+        if ($useRedirectMode) {
+            $previewUrl = 'preview/' . $encodedPath;
+            $thumbUrl   = 'thumb/'   . $encodedPath;
+        }
         $firstImageFullPath = __DIR__ . '/' . $firstImagePath;
         $imageInfo = getimagesize($firstImageFullPath);
         $aspectRatio = $imageInfo[0] / $imageInfo[1];
@@ -179,22 +183,19 @@ $currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
                     <?php foreach ($folderData['images'] as $image): ?>
                         <div class="image-item">
                             <?php
-                            // Build the view URL based on redirect mode
-                            // Use str_replace to keep slashes unencoded
                             $encodedPath = str_replace('%2F', '/', rawurlencode($image['path']));
-
-                            $previewUrl = 'thumb.php?mode=full&size=' . $previewSize . '&show=' . $encodedPath;
-                            $thumbUrl = 'thumb.php?show=' . $encodedPath;
-
+                            $previewUrl = 'thumb.php?mode=preview&image=' . $encodedPath;
+                            $thumbUrl   = 'thumb.php?image='               . $encodedPath;
+                            $viewUrl    = 'view.php?image='                . $encodedPath;
                             if ($useRedirectMode) {
-                                $viewUrl = 'view/' . $encodedPath;
-                            } else {
-                                $viewUrl = 'view.php?show=' . $encodedPath;
+                                $previewUrl = 'preview/' . $encodedPath;
+                                $thumbUrl   = 'thumb/'   . $encodedPath;
+                                $viewUrl    = 'view/'    . $encodedPath;
                             }
                             ?>
                             <a href="<?= $viewUrl ?>">
                                 <img
-                                    src="<?= $previewUrl ?>"
+                                    src="<?= $thumbUrl ?>"
                                     alt="<?= htmlspecialchars($image['name']) ?>"
                                     style="height: <?= htmlspecialchars($thumbSize) ?>px; width: <?= htmlspecialchars($thumbSize) ?>px"
                                     loading="lazy"

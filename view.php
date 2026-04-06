@@ -3,11 +3,12 @@
 require_once __DIR__ . '/helpers.php';
 
 // Get the image path from the URL parameter
-$imagePath = isset($_GET['show']) ? $_GET['show'] : '';
+$imagePath = isset($_GET['image']) ? $_GET['image'] : '';
 
 $config = loadConfig($imagePath);
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
+$useRedirectMode = isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
 $thumbSize = isset($_GET['size']) ? (int)$_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
@@ -40,14 +41,20 @@ if ($imageInfo === false) {
 }
 
 $encodedPath = str_replace('%2F', '/', rawurlencode($imagePath));
-$previewUrl = 'thumb.php?mode=full&size=' . $previewSize . '&show=' . $encodedPath; // Preview image: scaled & cropped
-$thumbUrl = 'thumb.php?show=' . $encodedPath; // Small square thumbnail
+$useFullMode = true;
+$previewMode = $useFullMode ? 'full' : 'preview';
+$previewUrl = 'thumb.php?mode=' . $useFullMode . '&image=' . $encodedPath;
+$thumbUrl   = 'thumb.php?image='               . $encodedPath;
+if ($useRedirectMode) {
+    $previewUrl = $previewMode . '/' . $encodedPath;
+    $thumbUrl   = 'thumb/'   . $encodedPath;
+}
 $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
 
 // Build URLs without escaping issues
 $ogImageUrl = $baseUrl . $previewUrl;
 $thumbImageUrl = $baseUrl . $thumbUrl;
-$currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+$currentUrl = currentUrl();
 ?>
 <!DOCTYPE html>
 <html>
