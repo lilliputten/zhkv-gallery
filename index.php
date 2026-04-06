@@ -161,6 +161,7 @@ $currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
     <?php endif; ?>
 
     <link rel="stylesheet" href="index.css" />
+    <?php faviconTag(); ?>
 </head>
 <body>
     <h1 class="title"><?= htmlspecialchars($title) ?></h1>

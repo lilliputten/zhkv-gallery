@@ -38,6 +38,12 @@ function loadFolderConfig($folderPath, &$config, $configName = '.config') {
  * @param string $imagePath Optional path to an image file to load folder-specific config
  * @return array Merged configuration array
  */
+function faviconTag() {
+    if (file_exists(__DIR__ . '/favicon.ico')) {
+        echo '<link rel="icon" href="favicon.ico" type="image/x-icon" />' . "\n";
+    }
+}
+
 function loadConfig($imagePath = null) {
     $configFile = __DIR__ . '/.config.json';
     $localConfigFile = __DIR__ . '/.config.local.json';

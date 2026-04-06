@@ -84,6 +84,7 @@ $currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
     <meta property="twitter:image:height" content="<?php echo $thumbSize; ?>" />
 
     <link rel="preload" href="<?= $previewUrl ?>" as="image">
+    <?php faviconTag(); ?>
     <style>
       body {
         padding: 0;
