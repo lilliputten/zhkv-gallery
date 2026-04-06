@@ -9,13 +9,17 @@ $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
 $useRedirectMode = isset($_GET['redirect']) ? ($_GET['redirect'] === '1' || $_GET['redirect'] === 'true') : (isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false);
 $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
+$indexCacheValidMins = isset($config['indexCacheValidHours']) ? $config['indexCacheValidHours'] : 30;
 $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
 
-$cacheFile = $indexCache ? __DIR__ . '/' . $indexCache : "";
+$cacheFile = $indexCache ? __DIR__ . '/' . $indexCache : '';
+$cacheExpired = $cacheFile && file_exists($cacheFile)
+    && $indexCacheValidMins
+    && (time() - filemtime($cacheFile)) > $indexCacheValidMins * 60;
 $scanResults = [];
 
-// Check if cache file exists
-if (file_exists($cacheFile)) {
+// Check if cache file exists and is still valid
+if (file_exists($cacheFile) && !$cacheExpired) {
     // Read from cache
     $cachedData = file_get_contents($cacheFile);
     $scanResults = json_decode($cachedData, true);
