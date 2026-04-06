@@ -135,6 +135,7 @@ $currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
     if ($firstImagePath):
         $encodedPath = str_replace('%2F', '/', rawurlencode($firstImagePath));
         $previewUrl = 'thumb.php?mode=full&size=' . $previewSize . '&show=' . $encodedPath;
+        $thumbUrl = 'thumb.php?show=' . $encodedPath;
         $firstImageFullPath = __DIR__ . '/' . $firstImagePath;
         $imageInfo = getimagesize($firstImageFullPath);
         $aspectRatio = $imageInfo[0] / $imageInfo[1];
@@ -144,11 +145,19 @@ $currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
         }
         // Build URLs without escaping slashes
         $ogImageUrl = $baseUrl . $previewUrl;
+        $thumbImageUrl = $baseUrl . $thumbUrl;
     ?>
+    <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
+    <meta property="og:image:width" content="<?= $thumbSize ?>" />
+    <meta property="og:image:height" content="<?= $thumbSize ?>" />
+<?/*
     <meta property="og:image" content="<?= htmlspecialchars($ogImageUrl) ?>" />
-    <meta property="og:image:width" content="<?= $previewSize ?>" />
+    <meta property="og:image:width" content="<?= $thumbSize ?>" />
     <meta property="og:image:height" content="<?= floor($calculatedHeight) ?>" />
-    <meta name="twitter:image" content="<?= htmlspecialchars($ogImageUrl) ?>" />
+*/?>
+    <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
+    <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
+    <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
     <?php endif; ?>
 
     <link rel="stylesheet" href="index.css" />

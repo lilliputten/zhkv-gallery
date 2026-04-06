@@ -9,9 +9,9 @@ $full = isset($_GET['mode']) ? $_GET['mode'] === 'full' : false;
 
 $config = loadConfig();
 $thumbSize = isset($_GET['size']) ? (int)$_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
-$previewSize = isset($config['previewSize']) ? $config['previewSize'] : 800;
+$previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : null;
-$thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs.cache';
+$thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs';
 
 // Security: Validate the path to prevent directory traversal attacks
 if (empty($imagePath)) {
@@ -77,7 +77,7 @@ if ($full) {
     $newHeight = $thumbSize;
 }
 
-$cacheFilename = $originalName . '-' . $currentHash . '-' . $newWidth . '.webp';
+$cacheFilename = $originalName . '-' . $currentHash . '-' . ($full ? 'full' : 'thumb') . '-' . $newWidth . 'x' . $newHeight . '.webp';
 $cachePath = $thumbsPath . '/' . $cacheFilename;
 
 // Check if cached thumbnail exists (hash in filename guarantees freshness)
@@ -129,20 +129,19 @@ if (extension_loaded('gd')) {
         $cropWidth = $originalWidth;
         $cropHeight = min($originalHeight, (int)floor($newHeight / $scale));
     } else {
-        // Crop to maintain aspect ratio only for non-full mode
-        if ($srcRatio > $dstRatio) {
-            // Image is wider than square - crop width
-            $cropWidth = $originalHeight;
+        // Square crop for thumb mode
+        if ($srcRatio > 1) {
+            // Wider than tall: crop sides
             $cropHeight = $originalHeight;
-            $cropX = floor(($originalWidth - $cropWidth) / 2);
+            $cropWidth = $originalHeight;
+            $cropX = (int)floor(($originalWidth - $cropWidth) / 2);
             $cropY = 0;
         } else {
-            // Image is taller than square - crop height
+            // Taller than wide: crop bottom
             $cropWidth = $originalWidth;
             $cropHeight = $originalWidth;
             $cropX = 0;
-            $cropY = 0; // Crop to the top
-            // $cropY = floor(($originalHeight - $cropHeight) / 2); // Crop to the center
+            $cropY = 0;
         }
     }
 
