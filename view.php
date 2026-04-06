@@ -9,6 +9,7 @@ $config = loadConfig($imagePath);
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
+$maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
 
 // Security: Validate the path to prevent directory traversal attacks
 if (empty($imagePath)) {
@@ -38,8 +39,13 @@ if ($imageInfo === false) {
 }
 
 $encodedPath = str_replace('%2F', '/', rawurlencode($imagePath));
-$previewUrl = 'thumb.php?mode=full&size=' . $previewSize . '&show=' . $encodedPath;
+$previewUrl = 'thumb.php?mode=full&size=' . $previewSize . '&show=' . $encodedPath; // Preview image: scaled & cropped
+$thumbUrl = 'thumb.php?show=' . $encodedPath; // Samll square thumbnail
 $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
+
+// Build URLs without escaping issues
+$ogImageUrl = $baseUrl . $previewUrl;
+$currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -48,6 +54,28 @@ $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="<?php echo $baseUrl; ?>" />
     <title><?php echo htmlspecialchars($title) . ': ' . htmlspecialchars($imagePath); ?></title>
+    <!-- OpenGraph Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="<?php echo htmlspecialchars($title) . ': ' . htmlspecialchars(basename($imagePath)); ?>" />
+    <meta property="og:description" content="View image: <?php echo htmlspecialchars(basename($imagePath)); ?>" />
+    <meta property="og:image" content="<?php echo htmlspecialchars($ogImageUrl); ?>" />
+    <meta property="og:image:width" content="<?php echo $previewSize; ?>" />
+    <meta property="og:image:height" content="<?php
+        $aspectRatio = $imageInfo[0] / $imageInfo[1];
+        $calculatedHeight = floor($previewSize / $aspectRatio);
+        if ($maxHeightRatio && $calculatedHeight > $previewSize * $maxHeightRatio) {
+            $calculatedHeight = $previewSize * $maxHeightRatio;
+        }
+        echo floor($calculatedHeight);
+    ?>" />
+    <meta property="og:url" content="<?php echo htmlspecialchars($currentUrl); ?>" />
+    <meta property="og:site_name" content="<?php echo htmlspecialchars($title); ?>" />
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="<?php echo htmlspecialchars($title) . ': ' . htmlspecialchars(basename($imagePath)); ?>" />
+    <meta name="twitter:description" content="View image: <?php echo htmlspecialchars(basename($imagePath)); ?>" />
+    <meta name="twitter:image" content="<?php echo htmlspecialchars($ogImageUrl); ?>" />
+
     <link rel="preload" href="<?= $previewUrl ?>" as="image">
     <style>
       body {

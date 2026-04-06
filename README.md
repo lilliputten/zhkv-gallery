@@ -25,6 +25,10 @@ demo-site/
 ├── thumb.php           # Thumbnail generator with caching
 ├── helpers.php         # Shared utility functions
 ├── index.css           # Gallery stylesheet
+├── package.json        # Package configuration with metadata and scripts
+├── LICENSE             # MIT License for the project
+├── README.md           # Comprehensive project documentation
+├── CHANGELOG.md        # Version history and change tracking
 ├── .htaccess           # Apache URL rewriting rules
 ├── .config.json        # Default configuration file
 ├── .config.local.json  # Optional local configuration overrides (gitignored)
@@ -343,13 +347,13 @@ http://localhost/index.php?redirect=1
 
 ### View Specific Image
 ```
-http://localhost/view.php?show=260330-Previews-002/header%201.png
-http://localhost/view/260330-Previews-002/header%201.png  (with clean URLs)
+http://localhost/view.php?show=260330-Previews-002/header-1.png
+http://localhost/view/260330-Previews-002/header-1.png  (with clean URLs)
 ```
 
 ### Generate Thumbnail
 ```
-http://localhost/thumb.php?show=260330-Previews-002/header%201.png
+http://localhost/thumb.php?show=260330-Previews-002/header-1.png
 ```
 
 ---
@@ -417,6 +421,48 @@ chmod 644 <indexCache>
 ## License
 
 This project is provided as-is for demonstration purposes.
+
+---
+
+## Author
+
+Created for demo site image gallery functionality.
+
+---
+
+## Development Workflow
+
+### Package Configuration
+The project includes a `package.json` file for better project management and development workflow:
+
+```json
+{
+  "name": "php-image-gallery",
+  "version": "1.0.0",
+  "description": "A lightweight PHP-based image gallery system with automatic directory scanning and thumbnail generation",
+  "scripts": {
+    "serve": "php -S localhost:8000",
+    "dev": "php -S localhost:8000"
+  }
+}
+```
+
+### Development Commands
+```bash
+# Start local development server
+npm run serve
+# or
+npm run dev
+```
+
+### VS Code Debugging
+The project includes VS Code debugging configuration in `.vscode/launch.json` for seamless PHP development.
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 

@@ -6,6 +6,7 @@ $config = loadConfig();
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $thumbSize = isset($config['thumbSize']) ? $config['thumbSize'] : 150;
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
+$maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
 $useRedirectMode = isset($_GET['redirect']) ? ($_GET['redirect'] === '1' || $_GET['redirect'] === 'true') : (isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false);
 $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
 $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
@@ -101,6 +102,8 @@ if (file_exists($cacheFile)) {
         file_put_contents($cacheFile, json_encode($scanResults, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 }
+
+$currentUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -108,22 +111,50 @@ if (file_exists($cacheFile)) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><?= htmlspecialchars($title) ?></title>
+
+    <!-- OpenGraph & Twitter Card Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="<?= htmlspecialchars($title) ?>" />
+    <meta property="og:description" content="Image gallery with thumbnails and viewer" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="<?= htmlspecialchars($title) ?>" />
+    <meta name="twitter:description" content="Image gallery with thumbnails and viewer" />
+    <meta property="og:url" content="<?= htmlspecialchars($currentUrl) ?>" />
+    <meta property="og:site_name" content="<?= htmlspecialchars($title) ?>" />
+    <?php
+    $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
+    $firstImagePath = null;
+    if (!empty($scanResults)) {
+        $firstFolder = reset($scanResults);
+        if (!empty($firstFolder['images'])) {
+            $firstImage = reset($firstFolder['images']);
+            $firstImagePath = $firstImage['path'];
+        }
+    }
+
+    if ($firstImagePath):
+        $encodedPath = str_replace('%2F', '/', rawurlencode($firstImagePath));
+        $previewUrl = 'thumb.php?mode=full&size=' . $previewSize . '&show=' . $encodedPath;
+        $firstImageFullPath = __DIR__ . '/' . $firstImagePath;
+        $imageInfo = getimagesize($firstImageFullPath);
+        $aspectRatio = $imageInfo[0] / $imageInfo[1];
+        $calculatedHeight = floor($previewSize / $aspectRatio);
+        if ($maxHeightRatio && $calculatedHeight > $previewSize * $maxHeightRatio) {
+            $calculatedHeight = $previewSize * $maxHeightRatio;
+        }
+        // Build URLs without escaping slashes
+        $ogImageUrl = $baseUrl . $previewUrl;
+    ?>
+    <meta property="og:image" content="<?= htmlspecialchars($ogImageUrl) ?>" />
+    <meta property="og:image:width" content="<?= $previewSize ?>" />
+    <meta property="og:image:height" content="<?= floor($calculatedHeight) ?>" />
+    <meta name="twitter:image" content="<?= htmlspecialchars($ogImageUrl) ?>" />
+    <?php endif; ?>
+
     <link rel="stylesheet" href="index.css" />
 </head>
 <body>
     <h1 class="title"><?= htmlspecialchars($title) ?></h1>
-
-    <!--
-    <?php if ($useRedirectMode): ?>
-        <p style="text-align: center; color: #3498db; margin-bottom: 20px;">
-            ✓ Clean URL mode enabled (<a href="?redirect=0">Switch to query string mode</a>)
-        </p>
-    <?php else: ?>
-        <p style="text-align: center; color: #666; margin-bottom: 20px;">
-            Query string mode (<a href="?redirect=1">Enable clean URLs</a>)
-        </p>
-    <?php endif; ?>
-    -->
 
     <?php if (empty($scanResults)): ?>
         <p style="text-align: center; color: #999;">No images found.</p>
