@@ -36,7 +36,7 @@ function loadFolderConfig($folderPath, &$config, $configName = '.config') {
  * Also loads config from the image's parent folder if an image path is provided
  *
  * @param string $imagePath Optional path to an image file to load folder-specific config
- * @return array Merged configuration array
+ * @return string Merged configuration array
  */
 function currentUrl() {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
@@ -88,4 +88,152 @@ function loadConfig($imagePath = null) {
     }
 
     return $config;
+}
+
+/**
+ * Get cached image list or create cache if needed
+ * Returns a flattened list of all images for navigation
+ *
+ * @param array $config Configuration array
+ * @param string|null $currentImagePath Optional current image path for navigation
+ * @return array Array containing image list and navigation info
+ */
+function getImageList($config, $currentImagePath = null) {
+    $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
+    $indexCacheValidHours = isset($config['indexCacheValidHours']) ? $config['indexCacheValidHours'] : 30;
+
+    $cacheFile = $indexCache ? __DIR__ . '/' . $indexCache : '';
+    $cacheExpired = $cacheFile && file_exists($cacheFile)
+        && $indexCacheValidHours
+        && (time() - filemtime($cacheFile)) > $indexCacheValidHours * 60 * 60;
+
+    $scanResults = [];
+
+    // Check if cache file exists and is still valid
+    if (file_exists($cacheFile) && !$cacheExpired) {
+        // Read from cache
+        $cachedData = file_get_contents($cacheFile);
+        $scanResults = json_decode($cachedData, true);
+    } else {
+        // Scan directories for images
+        $supportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+        $baseDir = __DIR__;
+
+        // Get all subdirectories
+        $items = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($baseDir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($items as $item) {
+            if ($item->isDir()) {
+                $dirPath = $item->getPathname();
+                $dirName = $item->getFilename();
+
+                // Skip hidden directories
+                if (strpos($dirName, '.') === 0) {
+                    continue;
+                }
+
+                // Get relative path from base directory
+                $relativePath = str_replace('\\', '/', str_replace($baseDir . DIRECTORY_SEPARATOR, '', $dirPath));
+
+                // Scan for images in this directory
+                $images = [];
+                $dirFiles = scandir($dirPath);
+
+                if ($dirFiles !== false) {
+                    foreach ($dirFiles as $file) {
+                        if ($file === '.' || $file === '..') {
+                            continue;
+                        }
+
+                        $filePath = $dirPath . '/' . $file;
+
+                        // Check if it's a file (not directory)
+                        if (!is_file($filePath)) {
+                            continue;
+                        }
+
+                        // Check file extension
+                        $pathInfo = pathinfo($file);
+                        $extension = strtolower(isset($pathInfo['extension']) ? $pathInfo['extension'] : '');
+
+                        if (in_array($extension, $supportedExtensions)) {
+                            $imageName = str_replace('-', ' ', isset($pathInfo['filename']) ? $pathInfo['filename'] : $file);
+                            $imageRelativePath = str_replace('\\', '/', str_replace($baseDir . DIRECTORY_SEPARATOR, '', $filePath));
+
+                            $images[] = [
+                                'name' => $imageName,
+                                'path' => $imageRelativePath,
+                                'filename' => $file
+                            ];
+                        }
+                    }
+                }
+
+                // Only add directories that have images
+                if (!empty($images)) {
+                    // Sort images alphabetically by name (case-insensitive)
+                    usort($images, function($a, $b) {
+                        return strcasecmp($a['name'], $b['name']);
+                    });
+
+                    $scanResults[$relativePath] = [
+                        'name' => str_replace('-', ' ', $dirName),
+                        'images' => $images
+                    ];
+                }
+            }
+        }
+
+        // Sort folders alphabetically by name (case-insensitive)
+        uasort($scanResults, function($a, $b) {
+            return strcasecmp($a['name'], $b['name']);
+        });
+
+        // Save to cache
+        if ($cacheFile) {
+            file_put_contents($cacheFile, json_encode($scanResults, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        }
+    }
+
+    // Flatten the array to get a simple list of images for navigation
+    $flatImageList = [];
+    foreach ($scanResults as $folder => $folderData) {
+        foreach ($folderData['images'] as $image) {
+            $flatImageList[] = $image['path'];
+        }
+    }
+
+    // Find current image position and get nav info if specified
+    $navInfo = [
+        'prev' => null,
+        'next' => null,
+        'currentIndex' => -1,
+        'totalImages' => count($flatImageList)
+    ];
+
+    if ($currentImagePath) {
+        $currentIndex = array_search($currentImagePath, $flatImageList);
+        if ($currentIndex !== false) {
+            $navInfo['currentIndex'] = $currentIndex;
+
+            // Get previous image
+            if ($currentIndex > 0) {
+                $navInfo['prev'] = $flatImageList[$currentIndex - 1];
+            }
+
+            // Get next image
+            if ($currentIndex < count($flatImageList) - 1) {
+                $navInfo['next'] = $flatImageList[$currentIndex + 1];
+            }
+        }
+    }
+
+    return [
+        'foldered' => $scanResults,   // Original foldered structure for index.php
+        'flat' => $flatImageList,      // Flat list for navigation
+        'navInfo' => $navInfo          // Navigation information if current image specified
+    ];
 }

@@ -30,6 +30,12 @@ h1.title {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-weight: normal;
+}
+@media (max-width: 968px) {
+    .section-title {
+        text-align: center;
+    }
 }
 .image-grid {
     display: grid;
@@ -48,7 +54,6 @@ h1.title {
     overflow: hidden;
 }
 .image-item:hover {
-    transform: translateY(-2px);
     opacity: 0.8;
 }
 .image-item a {
@@ -71,6 +76,7 @@ h1.title {
     max-width: 100%;
     overflow: hidden;
     margin:0 auto;
+    box-sizing: content-box;
 }
 .image-name {
     margin-top: 10px;

@@ -46,20 +46,47 @@ if (!$maxWidth) {
     $maxWidth = $imageInfo[0];
 }
 
+// Get navigation info for previous/next images
+$imageData = getImageList($config, $imagePath);
+$navInfo = $imageData['navInfo'];
+
+// Generate view URLs for previous and next images
+$prevViewUrl = '';
+$nextViewUrl = '';
+
+if ($navInfo['prev']) {
+    $encodedPrev = str_replace('%2F', '/', rawurlencode($navInfo['prev']));
+    $prevViewUrl = 'view.php?image=' . $encodedPrev;
+    if ($useRedirectMode) {
+        $prevViewUrl = 'view/' . $encodedPrev;
+    }
+}
+
+if ($navInfo['next']) {
+    $encodedNext = str_replace('%2F', '/', rawurlencode($navInfo['next']));
+    $nextViewUrl = 'view.php?image=' . $encodedNext;
+    if ($useRedirectMode) {
+        $nextViewUrl = 'view/' . $encodedNext;
+    }
+}
+
 $encodedPath = str_replace('%2F', '/', rawurlencode($imagePath));
 $useFullMode = true;
 $previewMode = $useFullMode ? 'full' : 'preview';
-$previewUrl = 'thumb.php?mode=' . $useFullMode . '&image=' . $encodedPath;
+$previewUrl = 'thumb.php?mode=' . $previewMode . '&image=' . $encodedPath;
 $thumbUrl   = 'thumb.php?image='               . $encodedPath;
+$viewUrl    = 'view.php?image='                . $encodedPath;
 if ($useRedirectMode) {
     $previewUrl = $previewMode . '/' . $encodedPath;
     $thumbUrl   = 'thumb/'   . $encodedPath;
+    $viewUrl    = 'view/'    . $encodedPath;
 }
 $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
 
 // Build URLs without escaping issues
 $ogImageUrl = $baseUrl . $previewUrl;
 $thumbImageUrl = $baseUrl . $thumbUrl;
+$previewImageUrl = $baseUrl . $previewUrl;
 $currentUrl = currentUrl();
 ?>
 <!DOCTYPE html>
@@ -96,14 +123,14 @@ $currentUrl = currentUrl();
     <meta property="twitter:image:width" content="<?php echo $thumbSize; ?>" />
     <meta property="twitter:image:height" content="<?php echo $thumbSize; ?>" />
 
-    <link rel="preload" href="<?= $previewUrl ?>" as="image">
+    <link rel="preload" href="<?= $previewImageUrl ?>" as="image">
     <?php faviconTag(); ?>
     <style>
-      body {
-        padding: 0;
-        margin: 0;
-      }
-      .image {
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        .image {
             width: 100%;
             height: auto;
             margin: 0 auto;
@@ -111,15 +138,12 @@ $currentUrl = currentUrl();
 <?php if ($maxWidth) { ?>
             max-width: <?= $maxWidth ?>px;
 <?php } ?>
-            background-image: url("<?= $previewUrl ?>");
+            background-image: url("<?= $previewImageUrl ?>");
             background-position: center top;
             background-size: 100% auto;
             background-repeat: no-repeat;
-      }
-      .back-button {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
+        }
+        .nav-button {
             width: 50px;
             height: 50px;
             background-color: rgba(0, 0, 0, 0.7);
@@ -135,18 +159,49 @@ $currentUrl = currentUrl();
             transition: background-color 0.3s ease;
             z-index: 1000;
             box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-            opacity: 0.5;
-      }
-      .back-button:hover {
+            opacity: 0.4;
+        }
+        .float-panel {
+            position: fixed;
+            display: flex;
+            gap: 10px;
+        }
+        .float-panel.right {
+            right: 20px;
+        }
+        .float-panel.left {
+            left: 20px;
+        }
+        .float-panel.bottom {
+            bottom: 20px;
+        }
+        .float-panel.middle {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .nav-button:hover {
             background-color: rgba(0, 0, 0, 0.9);
-      }
-      .back-button:active {
-            transform: scale(0.95);
-      }
+        }
+        .nav-button:active {
+            transform: scale(0.8);
+        }
     </style>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
   </head>
   <body>
     <img class="image" src="<?php echo $encodedPath; ?>" border="0" />
-    <a href="<?php echo $baseUrl; ?>" class="back-button" title="Back to the Gallery">←</a>
+    <div class="float-panel left bottom">
+        <?php if ($prevViewUrl): ?>
+        <a href="<?php echo $prevViewUrl; ?>" class="nav-button" title="Previous image"><i class="fa fa-chevron-left"></i></a>
+        <?php endif; ?>
+        <a href="<?php echo $baseUrl; ?>" class="nav-button" title="Back to the gallery"><i class="fa fa-home"></i></a>
+        <?php if ($nextViewUrl): ?>
+        <a href="<?php echo $nextViewUrl; ?>" class="nav-button" title="Next image"><i class="fa fa-chevron-right"></i></a>
+        <?php endif; ?>
+    </div>
   </body>
 </html>

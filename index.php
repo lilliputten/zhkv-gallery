@@ -12,100 +12,9 @@ $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
 $indexCacheValidMins = isset($config['indexCacheValidHours']) ? $config['indexCacheValidHours'] : 30;
 $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
 
-$cacheFile = $indexCache ? __DIR__ . '/' . $indexCache : '';
-$cacheExpired = $cacheFile && file_exists($cacheFile)
-    && $indexCacheValidMins
-    && (time() - filemtime($cacheFile)) > $indexCacheValidMins * 60;
-$scanResults = [];
-
-// Check if cache file exists and is still valid
-if (file_exists($cacheFile) && !$cacheExpired) {
-    // Read from cache
-    $cachedData = file_get_contents($cacheFile);
-    $scanResults = json_decode($cachedData, true);
-} else {
-    // Scan directories for images
-    $supportedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
-    $baseDir = __DIR__;
-
-    // Get all subdirectories
-    $items = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($baseDir, RecursiveDirectoryIterator::SKIP_DOTS),
-        RecursiveIteratorIterator::SELF_FIRST
-    );
-
-    foreach ($items as $item) {
-        if ($item->isDir()) {
-            $dirPath = $item->getPathname();
-            $dirName = $item->getFilename();
-
-            // Skip hidden directories
-            if (strpos($dirName, '.') === 0) {
-                continue;
-            }
-
-            // Get relative path from base directory
-            $relativePath = str_replace('\\', '/', str_replace($baseDir . DIRECTORY_SEPARATOR, '', $dirPath));
-
-            // Scan for images in this directory
-            $images = [];
-            $dirFiles = scandir($dirPath);
-
-            if ($dirFiles !== false) {
-                foreach ($dirFiles as $file) {
-                    if ($file === '.' || $file === '..') {
-                        continue;
-                    }
-
-                    $filePath = $dirPath . '/' . $file;
-
-                    // Check if it's a file (not directory)
-                    if (!is_file($filePath)) {
-                        continue;
-                    }
-
-                    // Check file extension
-                    $pathInfo = pathinfo($file);
-                    $extension = strtolower(isset($pathInfo['extension']) ? $pathInfo['extension'] : '');
-
-                    if (in_array($extension, $supportedExtensions)) {
-                        $imageName = str_replace('-', ' ', isset($pathInfo['filename']) ? $pathInfo['filename'] : $file);
-                        $imageRelativePath = str_replace('\\', '/', str_replace($baseDir . DIRECTORY_SEPARATOR, '', $filePath));
-
-                        $images[] = [
-                            'name' => $imageName,
-                            'path' => $imageRelativePath,
-                            'filename' => $file
-                        ];
-                    }
-                }
-            }
-
-            // Only add directories that have images
-            if (!empty($images)) {
-                // S.cacheort images alphabetically by name (case-insensitive)
-                usort($images, function($a, $b) {
-                    return strcasecmp($a['name'], $b['name']);
-                });
-
-                $scanResults[$relativePath] = [
-                    'name' => str_replace('-', ' ', $dirName),
-                    'images' => $images
-                ];
-            }
-        }
-    }
-
-    // Sort folders alphabetically by name (case-insensitive)
-    uasort($scanResults, function($a, $b) {
-        return strcasecmp($a['name'], $b['name']);
-    });
-
-    // Save to cache
-    if ($cacheFile) {
-        file_put_contents($cacheFile, json_encode($scanResults, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-    }
-}
+// Get image list using the shared cache function
+$imageData = getImageList($config);
+$scanResults = $imageData['foldered'];
 
 $currentUrl = currentUrl();
 ?>
@@ -178,6 +87,7 @@ $currentUrl = currentUrl();
         <p style="text-align: center; color: #999;">No images found.</p>
     <?php else: ?>
         <?php foreach ($scanResults as $folderPath => $folderData): ?>
+            <a name="<?= $folderPath ?>"></a>
             <div class="section">
                 <h2 class="section-title"><?= htmlspecialchars($folderData['name']) ?></h2>
                 <div
