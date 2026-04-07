@@ -1,10 +1,9 @@
 {
-    "title": "ZDKV Designs",
+    "title": "Design Gallery",
     "useRedirectMode": true,
     "thumbSize": 200,
     "previewSize": 200,
     "maxHeightRatio": 4,
-    "maxWidth": 1600,
     "thumbsDir": ".cache.thumbs",
     "indexCache": ".cache.index"
 }

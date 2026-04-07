@@ -8,6 +8,7 @@ $imagePath = isset($_GET['image']) ? $_GET['image'] : '';
 $config = loadConfig($imagePath);
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
+
 $useRedirectMode = isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
 $thumbSize = isset($_GET['size']) ? (int)$_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
@@ -38,6 +39,11 @@ if (!file_exists($fullPath)) {
 $imageInfo = getimagesize($fullPath);
 if ($imageInfo === false) {
     die('Not a valid image file');
+}
+
+// Set maxWidth to image width if not configured
+if (!$maxWidth) {
+    $maxWidth = $imageInfo[0];
 }
 
 $encodedPath = str_replace('%2F', '/', rawurlencode($imagePath));
