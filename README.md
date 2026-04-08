@@ -53,7 +53,8 @@ demo-site/
 - Links to full-size image viewer
 - Caches scan results to configurable cache file (default: `.cache.index`) for faster subsequent loads
 - Supports toggle between query string and clean URL modes
-- Sorts folders and images alphabetically (case-insensitive)
+- Sorts folders with date tags (YYMMDD) chronologically with newest first, other folders alphabetically
+- Sorts images alphabetically (case-insensitive)
 
 **Configuration Used**:
 - `title`: Page title displayed in browser tab and heading
@@ -278,6 +279,32 @@ Create this file to override default settings without modifying `.config.json`. 
 - Checked before generating new thumbnail
 - Served directly if exists (much faster)
 - New thumbnails saved after generation
+
+---
+
+## Folder Sorting
+
+### Date-Tagged Folder Sorting
+
+Folders with names starting with date tags in format `YYMMDD` (e.g., `260408-Previews-003`) are automatically sorted chronologically with the newest folders appearing first.
+
+**Sorting Rules**:
+- **Date-tagged folders** (starting with 6 digits like `260408-*`): Sorted in reverse chronological order (newest → oldest)
+- **Regular folders** (without date tags): Sorted alphabetically (A-Z)
+- **Mixed folders**: Date-tagged folders always appear before non-date-tagged folders
+
+**Examples**:
+```
+260410-Latest-Shots     # Newest (appears first)
+260408-Previews-003     # Newer
+260330-Classic-Views    # Older
+Custom-Assets           # Regular folder (alphabetical)
+Previews-Base           # Regular folder (alphabetical)
+```
+
+### Image Sorting
+
+Images within each folder are sorted alphabetically (case-insensitive) based on their filename without extensions.
 
 ---
 

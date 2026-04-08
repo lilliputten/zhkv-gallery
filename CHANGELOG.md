@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Consolidated navigation buttons styling using `nav-button` class
 - Moved info button into main navigation panel for better UI consistency
 - Updated styling architecture with consolidated CSS in head section
+- Enhanced folder sorting: date-tagged folders (YYMMDD) sorted chronologically with newest first, regular folders alphabetically
 
 ### Fixed
 - Fixed slash encoding in URLs to prevent `%2F` escapes

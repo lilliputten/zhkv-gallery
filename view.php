@@ -96,7 +96,8 @@ $thumbImageUrl = $baseUrl . $thumbUrl;
 $previewImageUrl = $baseUrl . $previewUrl;
 $currentUrl = currentUrl();
 
-$pageTitle = $title . ': ' . ($name ? $name : $imagePath);
+$shortTitle = $name ? $name : $imagePath;
+$pageTitle = $title . ': ' . $shortTitle;
 $pageDescription = $description ? $description : basename($imagePath);
 
 ?>
@@ -106,19 +107,19 @@ $pageDescription = $description ? $description : basename($imagePath);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="<?php echo $baseUrl; ?>" />
-    <title><?php echo htmlspecialchars($pageTitle); ?></title>
+    <title><?php echo htmlspecialchars($shortTitle); ?></title>
     <!-- OpenGraph Meta Tags -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="<?php echo htmlspecialchars($pageTitle); ?>" />
+    <meta property="og:site_name" content="<?php echo htmlspecialchars($title); ?>" />
+    <meta property="og:title" content="<?php echo htmlspecialchars($shortTitle); ?>" />
     <meta property="og:description" content="<?php echo htmlspecialchars($pageDescription); ?>" />
     <meta property="og:image" content="<?php echo htmlspecialchars($thumbImageUrl); ?>" />
     <meta property="og:image:width" content="<?php echo $thumbSize; ?>" />
     <meta property="og:image:height" content="<?php echo $thumbSize; ?>" />
     <meta property="og:url" content="<?php echo htmlspecialchars($currentUrl); ?>" />
-    <meta property="og:site_name" content="<?php echo htmlspecialchars($title); ?>" />
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="<?php echo htmlspecialchars($pageTitle); ?>" />
+    <meta name="twitter:title" content="<?php echo htmlspecialchars($shortTitle); ?>" />
     <meta name="twitter:description" content="<?php echo htmlspecialchars($pageDescription); ?>" />
     <meta name="twitter:image" content="<?php echo htmlspecialchars($thumbImageUrl); ?>" />
     <meta property="twitter:image:width" content="<?php echo $thumbSize; ?>" />

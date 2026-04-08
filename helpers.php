@@ -187,8 +187,28 @@ function getImageList($config, $currentImagePath = null) {
             }
         }
 
-        // Sort folders alphabetically by name (case-insensitive)
+        // Sort folders - date-tagged folders (YYMMDD) in reverse, others alphabetically
         uasort($scanResults, function($a, $b) {
+            // Check if both folder names start with a date tag (YYMMDD)
+            $aIsNumbered = preg_match('/^\d/', $a['name']);
+            $bIsNumbered = preg_match('/^\d/', $b['name']);
+
+            // If both have date tags, sort in reverse order (newer dates first)
+            if ($aIsNumbered && $bIsNumbered) {
+                return strcasecmp($b['name'], $a['name']);
+            }
+
+            // If only A has date tag, it should come before B
+            if ($aIsNumbered && !$bIsNumbered) {
+                return -1;
+            }
+
+            // If only B has date tag, it should come before A
+            if (!$aIsNumbered && $bIsNumbered) {
+                return 1;
+            }
+
+            // If neither have date tags, sort alphabetically
             return strcasecmp($a['name'], $b['name']);
         });
 
