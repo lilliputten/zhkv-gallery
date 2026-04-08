@@ -54,6 +54,9 @@ if (!$maxWidth) {
 $imageData = getImageList($config, $imagePath);
 $navInfo = $imageData['navInfo'];
 
+// Check if we have any metadata to display
+$hasMetadata = !empty($name) || !empty($description);
+
 // Generate view URLs for previous and next images
 $prevViewUrl = '';
 $nextViewUrl = '';
@@ -111,16 +114,6 @@ $pageDescription = $description ? $description : basename($imagePath);
     <meta property="og:image" content="<?php echo htmlspecialchars($thumbImageUrl); ?>" />
     <meta property="og:image:width" content="<?php echo $thumbSize; ?>" />
     <meta property="og:image:height" content="<?php echo $thumbSize; ?>" />
-<?/*
-    <meta property="og:image:height" content="<?php
-        $aspectRatio = $imageInfo[0] / $imageInfo[1];
-        $calculatedHeight = floor($previewSize / $aspectRatio);
-        if ($maxHeightRatio && $calculatedHeight > $previewSize * $maxHeightRatio) {
-            $calculatedHeight = $previewSize * $maxHeightRatio;
-        }
-        echo floor($calculatedHeight);
-    ?>" >
-*/?>
     <meta property="og:url" content="<?php echo htmlspecialchars($currentUrl); ?>" />
     <meta property="og:site_name" content="<?php echo htmlspecialchars($title); ?>" />
     <!-- Twitter Card Meta Tags -->
@@ -130,68 +123,16 @@ $pageDescription = $description ? $description : basename($imagePath);
     <meta name="twitter:image" content="<?php echo htmlspecialchars($thumbImageUrl); ?>" />
     <meta property="twitter:image:width" content="<?php echo $thumbSize; ?>" />
     <meta property="twitter:image:height" content="<?php echo $thumbSize; ?>" />
-
+    <!-- Resources -->
     <link rel="preload" href="<?= $previewImageUrl ?>" as="image">
     <?php faviconTag(); ?>
+    <link rel="stylesheet" href="view.css" />
     <style>
-        body {
-            padding: 0;
-            margin: 0;
-        }
         .image {
-            width: 100%;
-            height: auto;
-            margin: 0 auto;
-            display: block;
 <?php if ($maxWidth) { ?>
             max-width: <?= $maxWidth ?>px;
 <?php } ?>
             background-image: url("<?= $previewImageUrl ?>");
-            background-position: center top;
-            background-size: 100% auto;
-            background-repeat: no-repeat;
-        }
-        .nav-button {
-            width: 50px;
-            height: 50px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-            z-index: 1000;
-            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-            opacity: 0.4;
-        }
-        .float-panel {
-            position: fixed;
-            display: flex;
-            gap: 10px;
-        }
-        .float-panel.right {
-            right: 20px;
-        }
-        .float-panel.left {
-            left: 20px;
-        }
-        .float-panel.bottom {
-            bottom: 20px;
-        }
-        .float-panel.middle {
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        .nav-button:hover {
-            background-color: rgba(0, 0, 0, 0.9);
-        }
-        .nav-button:active {
-            transform: scale(0.8);
         }
     </style>
     <link
@@ -202,6 +143,7 @@ $pageDescription = $description ? $description : basename($imagePath);
   </head>
   <body>
     <img class="image" src="<?php echo $encodedPath; ?>" border="0" />
+
     <div class="float-panel left bottom">
         <?php if ($prevViewUrl): ?>
         <a href="<?php echo $prevViewUrl; ?>" class="nav-button" title="Previous image"><i class="fa fa-chevron-left"></i></a>
@@ -211,5 +153,51 @@ $pageDescription = $description ? $description : basename($imagePath);
         <a href="<?php echo $nextViewUrl; ?>" class="nav-button" title="Next image"><i class="fa fa-chevron-right"></i></a>
         <?php endif; ?>
     </div>
+
+    <?php if ($hasMetadata): ?>
+    <div class="float-panel right bottom">
+        <button class="nav-button" id="infoButton" title="Image information">
+            <i class="fa fa-info"></i>
+        </button>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($hasMetadata): ?>
+    <!-- Info Popup -->
+    <div class="info-popup show" id="infoPopup">
+        <div class="popup-content">
+            <?php if (!empty($name)): ?>
+            <div class="info-title"><?php echo htmlspecialchars($name); ?></div>
+            <?php endif; ?>
+            <?php if (!empty($description)): ?>
+            <div class="info-description"><?php echo htmlspecialchars($description); ?></div>
+            <?php endif; ?>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const infoButton = document.getElementById('infoButton');
+            const infoPopup = document.getElementById('infoPopup');
+            if (infoButton && infoPopup) {
+                infoButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    infoPopup.classList.toggle('show');
+                });
+                // Close popup when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!infoButton.contains(event.target) && !infoPopup.contains(event.target)) {
+                        infoPopup.classList.remove('show');
+                    }
+                });
+                // Close popup with Escape key
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') {
+                        infoPopup.classList.remove('show');
+                    }
+                });
+            }
+        });
+    </script>
+    <?php endif; ?>
   </body>
 </html>

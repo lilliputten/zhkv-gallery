@@ -438,7 +438,7 @@ The project includes a `package.json` file for better project management and dev
 ```json
 {
   "name": "php-image-gallery",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A lightweight PHP-based image gallery system with automatic directory scanning and thumbnail generation",
   "scripts": {
     "serve": "php -S localhost:8000",
@@ -474,4 +474,4 @@ Created for demo site image gallery functionality.
 
 ## Version
 
-1.0.0
+1.0.1 (2026-04-08)

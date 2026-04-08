@@ -1,6 +1,6 @@
 {
   "name": "php-image-gallery",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A lightweight PHP-based image gallery system with automatic directory scanning and thumbnail generation",
   "main": "index.php",
   "type": "module",

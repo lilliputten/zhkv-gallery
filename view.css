@@ -1,0 +1,112 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+.image {
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+    background-position: center top;
+    background-size: 100% auto;
+    background-repeat: no-repeat;
+}
+.nav-button {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(60, 60, 60, 0.5);
+    color: white;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    z-index: 1000;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+}
+.nav-button:hover {
+    background-color: rgba(60, 60, 60, 0.6);
+    transform: scale(1.1);
+}
+
+/* Floating panel */
+.nav-button:active {
+    background-color: rgba(60, 60, 60, 1);
+}
+.float-panel {
+    position: fixed;
+    display: flex;
+    gap: 10px;
+}
+.float-panel.right {
+    right: 20px;
+}
+.float-panel.left {
+    left: 20px;
+}
+.float-panel.bottom {
+    bottom: 20px;
+}
+.float-panel.middle {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Info Popup Styles */
+.info-popup {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    left: 0px;
+    z-index: 1001;
+}
+
+.info-popup .popup-content {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(60, 60, 60, 0.5);
+    color: white;
+    border-radius: 6px;
+    padding: 15px;
+    /* max-width: 70%; */
+    max-width: min(70%, 400px);;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(3px);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: fadeIn 0.3s ease;
+}
+
+.info-popup:not(.show) .popup-content {
+    display: none;
+}
+
+.info-description,
+.info-title {
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.info-title {
+    font-weight: bold;
+}
+.info-description {
+    font-size: 12px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+

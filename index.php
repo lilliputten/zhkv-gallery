@@ -120,10 +120,10 @@ $currentUrl = currentUrl();
                                 $jsonData = file_get_contents($jsonFile);
                                 $metadata = json_decode($jsonData, true);
 
-                                if ($metadata && isset($metadata['name'])) {
+                                if ($metadata && !empty($metadata['name'])) {
                                     $imageName = $metadata['name'];
                                 }
-                                if ($metadata && isset($metadata['description'])) {
+                                if ($metadata && !empty($metadata['description'])) {
                                     $imageDescription = $metadata['description'];
                                 }
                             }
