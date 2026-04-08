@@ -7,25 +7,25 @@
   "author": "lilliputten",
   "license": "MIT",
   "repository": {
-    "type": "git",
-    "url": "https://github.com/lilliputten/zhkv-gallery"
+  "type": "git",
+  "url": "https://github.com/lilliputten/zhkv-gallery"
   },
   "homepage": "https://github.com/lilliputten/zhkv-gallery#readme",
   "engines": {
-    "php": ">=7.0"
+  "php": ">=7.0"
   },
   "keywords": [
-    "php",
-    "gallery",
-    "image",
-    "thumbnail",
-    "lightweight",
-    "directory-scanner"
+  "php",
+  "gallery",
+  "image",
+  "thumbnail",
+  "lightweight",
+  "directory-scanner"
   ],
   "dependencies": {},
   "devDependencies": {},
   "scripts": {
-    "serve": "php -S localhost:8000",
-    "dev": "php -S localhost:8000"
+  "serve": "php -S localhost:8000",
+  "dev": "php -S localhost:8000"
   }
 }
