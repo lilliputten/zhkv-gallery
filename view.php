@@ -9,6 +9,10 @@ $config = loadConfig($imagePath);
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
 
+// Image properties
+$name = isset($config['name']) ? $config['name'] : Null;
+$description = isset($config['description']) ? $config['description'] : Null;
+
 $useRedirectMode = isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
 $thumbSize = isset($_GET['size']) ? (int)$_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
@@ -88,6 +92,10 @@ $ogImageUrl = $baseUrl . $previewUrl;
 $thumbImageUrl = $baseUrl . $thumbUrl;
 $previewImageUrl = $baseUrl . $previewUrl;
 $currentUrl = currentUrl();
+
+$pageTitle = $title . ': ' . ($name ? $name : $imagePath);
+$pageDescription = $description ? $description : basename($imagePath);
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -95,11 +103,11 @@ $currentUrl = currentUrl();
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="<?php echo $baseUrl; ?>" />
-    <title><?php echo htmlspecialchars($title) . ': ' . htmlspecialchars($imagePath); ?></title>
+    <title><?php echo htmlspecialchars($pageTitle); ?></title>
     <!-- OpenGraph Meta Tags -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="<?php echo htmlspecialchars($title) . ': ' . htmlspecialchars(basename($imagePath)); ?>" />
-    <meta property="og:description" content="View image: <?php echo htmlspecialchars(basename($imagePath)); ?>" />
+    <meta property="og:title" content="<?php echo htmlspecialchars($pageTitle); ?>" />
+    <meta property="og:description" content="<?php echo htmlspecialchars($pageDescription); ?>" />
     <meta property="og:image" content="<?php echo htmlspecialchars($thumbImageUrl); ?>" />
     <meta property="og:image:width" content="<?php echo $thumbSize; ?>" />
     <meta property="og:image:height" content="<?php echo $thumbSize; ?>" />
@@ -117,8 +125,8 @@ $currentUrl = currentUrl();
     <meta property="og:site_name" content="<?php echo htmlspecialchars($title); ?>" />
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="<?php echo htmlspecialchars($title) . ': ' . htmlspecialchars(basename($imagePath)); ?>" />
-    <meta name="twitter:description" content="View image: <?php echo htmlspecialchars(basename($imagePath)); ?>" />
+    <meta name="twitter:title" content="<?php echo htmlspecialchars($pageTitle); ?>" />
+    <meta name="twitter:description" content="<?php echo htmlspecialchars($pageDescription); ?>" />
     <meta name="twitter:image" content="<?php echo htmlspecialchars($thumbImageUrl); ?>" />
     <meta property="twitter:image:width" content="<?php echo $thumbSize; ?>" />
     <meta property="twitter:image:height" content="<?php echo $thumbSize; ?>" />

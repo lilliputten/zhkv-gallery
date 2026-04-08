@@ -106,15 +106,39 @@ $currentUrl = currentUrl();
                                 $thumbUrl   = 'thumb/'   . $encodedPath;
                                 $viewUrl    = 'view/'    . $encodedPath;
                             }
+
+                            // Load image metadata from JSON file if exists
+                            $imageName = $image['name'];
+                            $imageDescription = "";
+
+                            // Remove image extension from path before adding .json
+                            $imagePathWithoutExt = pathinfo($image['path'], PATHINFO_FILENAME);
+                            $imageDir = pathinfo($image['path'], PATHINFO_DIRNAME);
+                            $jsonPath = ($imageDir !== '.') ? $imageDir . '/' . $imagePathWithoutExt : $imagePathWithoutExt;
+                            $jsonFile = __DIR__ . '/' . $jsonPath . '.json';
+                            if (file_exists($jsonFile)) {
+                                $jsonData = file_get_contents($jsonFile);
+                                $metadata = json_decode($jsonData, true);
+
+                                if ($metadata && isset($metadata['name'])) {
+                                    $imageName = $metadata['name'];
+                                }
+                                if ($metadata && isset($metadata['description'])) {
+                                    $imageDescription = $metadata['description'];
+                                }
+                            }
                             ?>
                             <a href="<?= $viewUrl ?>">
                                 <img
                                     src="<?= $thumbUrl ?>"
-                                    alt="<?= htmlspecialchars($image['name']) ?>"
+                                    alt="<?= htmlspecialchars($imageName) ?>"
                                     style="height: <?= htmlspecialchars($thumbSize) ?>px; width: <?= htmlspecialchars($thumbSize) ?>px"
                                     loading="lazy"
                                 />
-                                <div class="image-name"><?= htmlspecialchars($image['name']) ?></div>
+                                <div class="image-name"><?= htmlspecialchars($imageName) ?></div>
+                                <?php if ($imageDescription): ?>
+                                <div class="image-description"><?= htmlspecialchars($imageDescription) ?></div>
+                                <?php endif; ?>
                             </a>
                         </div>
                     <?php endforeach; ?>
