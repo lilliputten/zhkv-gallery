@@ -126,7 +126,8 @@ $currentUrl = currentUrl();
                 <img
                   src="<?= $thumbUrl ?>"
                   alt="<?= htmlspecialchars($imageName) ?>"
-                  style="height: <?= htmlspecialchars($thumbSize) ?>px; width: <?= htmlspecialchars($thumbSize) ?>px"
+                  width="<?= htmlspecialchars($thumbSize) ?>"
+                  height="<?= htmlspecialchars($thumbSize) ?>"
                   loading="lazy"
                 />
                 <div class="image-name"><?= htmlspecialchars($imageName) ?></div>

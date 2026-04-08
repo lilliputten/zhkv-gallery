@@ -158,7 +158,7 @@ $pageDescription = $description ? $description : basename($imagePath);
 
   <? if ($hasMetadata): ?>
   <!-- Info Popup -->
-  <div class="info-popup show" id="infoPopup">
+  <div class="info-popup" id="infoPopup">
     <div class="popup-content">
       <? if (!empty($name)): ?>
       <div class="info-title"><? echo htmlspecialchars($name) ?></div>
