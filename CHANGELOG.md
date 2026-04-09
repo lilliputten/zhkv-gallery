@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Renamed configuration files from `.config.json` and `.config.local.json` to `gallery.json` and `gallery.local.json`
+- Added `gallery.local.json.EXAMPLE` template file for easy local configuration setup
+- Updated all documentation references to use new configuration file names
+
 ## [1.0.1] - 2026-04-08
 
 ### Added

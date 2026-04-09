@@ -1,20 +1,21 @@
 <?php
 
 // Set isDev based on environment - true if port is 8000
-$serverPort = isset($_SERVER['SERVER_PORT']) ? (int)$_SERVER['SERVER_PORT'] : 0;
+$serverPort = isset($_SERVER['SERVER_PORT']) ? (int) $_SERVER['SERVER_PORT'] : 0;
 $isDev = ($serverPort === 8000);
 
 $basePath = str_replace('\\', '/', __DIR__);
 
 /**
- * Load configuration from a folder by merging .config.json and .config.local.json files
+ * Load configuration from a folder by merging gallery.json and gallery.local.json files
  * This function accepts the config array by reference and extends it with folder-specific config
  *
  * @param string $folderPath Path to the folder containing config files
  * @param array &$config Reference to the config array to be extended
  * @return void
  */
-function loadFolderConfig($folderPath, &$config, $configName = '.config') {
+function loadFolderConfig($folderPath, &$config, $configName = 'gallery')
+{
   // Load folder config files
   $configFile = $folderPath . '/' . $configName . '.json';
   $localConfigFile = $folderPath . '/' . $configName . '.local.json';
@@ -39,28 +40,31 @@ function loadFolderConfig($folderPath, &$config, $configName = '.config') {
 }
 
 /**
- * Load and merge configuration from .config.json and optional .config.local.json
+ * Load and merge configuration from gallery.json and optional gallery.local.json
  * Also loads config from the image's parent folder if an image path is provided
  *
  * @param string $imagePath Optional path to an image file to load folder-specific config
  * @return string Merged configuration array
  */
-function currentUrl() {
+function currentUrl()
+{
   $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     ? 'https'
     : ((!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http');
   return $protocol . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 }
 
-function faviconTag() {
+function faviconTag()
+{
   if (file_exists(__DIR__ . '/favicon.ico')) {
     echo '<link rel="icon" href="favicon.ico" type="image/x-icon" />' . "\n";
   }
 }
 
-function loadConfig($imagePath = null) {
-  $configFile = __DIR__ . '/.config.json';
-  $localConfigFile = __DIR__ . '/.config.local.json';
+function loadConfig($imagePath = null)
+{
+  $configFile = __DIR__ . '/gallery.json';
+  $localConfigFile = __DIR__ . '/gallery.local.json';
 
   // Load base config using loadFolderConfig
   $config = [];
@@ -97,7 +101,8 @@ function loadConfig($imagePath = null) {
   return $config;
 }
 
-function removeFileExtension($file) {
+function removeFileExtension($file)
+{
   $filePathWithoutExt = pathinfo($file, PATHINFO_FILENAME);
   $fileDir = pathinfo($file, PATHINFO_DIRNAME);
   return ($fileDir !== '.') ? $fileDir . '/' . $filePathWithoutExt : $filePathWithoutExt;
@@ -113,7 +118,8 @@ function removeFileExtension($file) {
  * @param string $imagePath Path to the image file
  * @return array Array with 'title' and 'description' keys (may be empty strings if not found)
  */
-function loadImageMetadataFromMarkdown($imagePath) {
+function loadImageMetadataFromMarkdown($imagePath)
+{
   global $basePath;
 
   $result = [
@@ -132,7 +138,7 @@ function loadImageMetadataFromMarkdown($imagePath) {
 
   // Match the pattern: ## {title}\n\n{description}
   // The description is everything after ## {title} and the blank line
-  if (preg_match('/^##\s+(.+?)\s*\n\s*\n(.*)$/s', $content, $matches)) {
+  if (preg_match('/^#+\s+(.+?)\s*\n\s*\n(.*)$/s', $content, $matches)) {
     $result['title'] = trim($matches[1]);
     $result['description'] = trim($matches[2]);
   }
@@ -148,7 +154,8 @@ function loadImageMetadataFromMarkdown($imagePath) {
  * @param string|null $currentImagePath Optional current image path for navigation
  * @return array Array containing image list and navigation info
  */
-function getImageList($config, $currentImagePath = null) {
+function getImageList($config, $currentImagePath = null)
+{
   global $isDev;
 
   $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
@@ -227,7 +234,7 @@ function getImageList($config, $currentImagePath = null) {
         // Only add directories that have images
         if (!empty($images)) {
           // Sort images alphabetically by name (case-insensitive)
-          usort($images, function($a, $b) {
+          usort($images, function ($a, $b) {
             return strcasecmp($a['name'], $b['name']);
           });
 
@@ -240,7 +247,7 @@ function getImageList($config, $currentImagePath = null) {
     }
 
     // Sort folders - date-tagged folders (YYMMDD) in reverse, others alphabetically
-    uasort($scanResults, function($a, $b) {
+    uasort($scanResults, function ($a, $b) {
       // Check if both folder names start with a date tag (YYMMDD)
       $aIsNumbered = preg_match('/^\d{6}\b/', $a['name']);
       $bIsNumbered = preg_match('/^\d{6}\b/', $b['name']);

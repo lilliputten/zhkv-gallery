@@ -3,7 +3,8 @@
 // Load helpers
 require_once __DIR__ . '/helpers.php';
 
-function thumbError($message, $code = 400) {
+function thumbError($message, $code = 400)
+{
   http_response_code($code);
   header('Content-Type: text/plain');
   exit($message);

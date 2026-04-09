@@ -1,5 +1,6 @@
 *.log
-.config.local.json
+gallery.local.json
+gallery.md
 .thumbs
 .cache*
 *example*

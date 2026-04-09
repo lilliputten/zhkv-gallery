@@ -17,10 +17,19 @@ $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRe
 $imageData = getImageList($config);
 $scanResults = $imageData['foldered'];
 
+$mdMetadata = loadImageMetadataFromMarkdown('gallery');
+if (!empty($mdMetadata['title'])) {
+  $galleryTitle = $mdMetadata['title'];
+}
+if (!empty($mdMetadata['description'])) {
+  $galleryDescription = $mdMetadata['description'];
+}
+
 $currentUrl = currentUrl();
 ?>
 <!DOCTYPE html>
 <html>
+
 <head>
   <title><?= htmlspecialchars($galleryTitle) ?></title>
   <!-- OpenGraph & Twitter Card Meta Tags -->
@@ -46,10 +55,10 @@ $currentUrl = currentUrl();
   if ($firstImagePath):
     $encodedPath = str_replace('%2F', '/', rawurlencode($firstImagePath));
     $previewUrl = 'thumb.php?mode=preview&image=' . $encodedPath;
-    $thumbUrl   = 'thumb.php?image='               . $encodedPath;
+    $thumbUrl = 'thumb.php?image=' . $encodedPath;
     if ($useRedirectMode) {
       $previewUrl = 'preview/' . $encodedPath;
-      $thumbUrl   = 'thumb/'   . $encodedPath;
+      $thumbUrl = 'thumb/' . $encodedPath;
     }
     $firstImageFullPath = $basePath . '/' . $firstImagePath;
     $imageInfo = getimagesize($firstImageFullPath);
@@ -61,17 +70,18 @@ $currentUrl = currentUrl();
     // Build URLs without escaping slashes
     $ogImageUrl = $baseUrl . $previewUrl;
     $thumbImageUrl = $baseUrl . $thumbUrl;
-  ?>
-  <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
-  <meta property="og:image:width" content="<?= $thumbSize ?>" />
-  <meta property="og:image:height" content="<?= $thumbSize ?>" />
-  <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
-  <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
-  <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
+    ?>
+    <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
+    <meta property="og:image:width" content="<?= $thumbSize ?>" />
+    <meta property="og:image:height" content="<?= $thumbSize ?>" />
+    <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
+    <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
+    <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
   <? endif ?>
   <link rel="stylesheet" href="index.css" />
   <? include('common-headers-post.php') ?>
 </head>
+
 <body>
   <h1 class="title"><?= htmlspecialchars($galleryTitle) ?></h1>
   <p class="gallery-description"><?= htmlspecialchars($galleryDescription) ?></p>
@@ -86,21 +96,19 @@ $currentUrl = currentUrl();
           <?= htmlspecialchars($folderData['name']) ?>
           <a class="anchor-link" href="#<?= $folderPath ?>"><i class="fa fa-link"></i></a>
         </h2>
-        <div
-          class="image-grid"
-          style="grid-template-columns: repeat(auto-fill, minmax(<?= htmlspecialchars($thumbSize) ?>px, 1fr))"
-        >
+        <div class="image-grid"
+          style="grid-template-columns: repeat(auto-fill, minmax(<?= htmlspecialchars($thumbSize) ?>px, 1fr))">
           <? foreach ($folderData['images'] as $image): ?>
             <div class="image-item">
               <?php
               $encodedPath = str_replace('%2F', '/', rawurlencode($image['path']));
               $previewUrl = 'thumb.php?mode=preview&image=' . $encodedPath;
-              $thumbUrl   = 'thumb.php?image='               . $encodedPath;
-              $viewUrl    = 'view.php?image='                . $encodedPath;
+              $thumbUrl = 'thumb.php?image=' . $encodedPath;
+              $viewUrl = 'view.php?image=' . $encodedPath;
               if ($useRedirectMode) {
                 $previewUrl = 'preview/' . $encodedPath;
-                $thumbUrl   = 'thumb/'   . $encodedPath;
-                $viewUrl    = 'view/'    . $encodedPath;
+                $thumbUrl = 'thumb/' . $encodedPath;
+                $viewUrl = 'view/' . $encodedPath;
               }
 
               // Load image metadata from JSON file if exists
@@ -134,16 +142,11 @@ $currentUrl = currentUrl();
               }
               ?>
               <a href="<?= $viewUrl ?>">
-                <img
-                  src="<?= $thumbUrl ?>"
-                  alt="<?= htmlspecialchars($imageTitle) ?>"
-                  width="<?= htmlspecialchars($thumbSize) ?>"
-                  height="<?= htmlspecialchars($thumbSize) ?>"
-                  loading="lazy"
-                />
+                <img src="<?= $thumbUrl ?>" alt="<?= htmlspecialchars($imageTitle) ?>"
+                  width="<?= htmlspecialchars($thumbSize) ?>" height="<?= htmlspecialchars($thumbSize) ?>" loading="lazy" />
                 <div class="image-name"><?= htmlspecialchars($imageTitle) ?></div>
                 <? if ($imageDescription): ?>
-                <div class="image-description"><?= htmlspecialchars($imageDescription) ?></div>
+                  <div class="image-description"><?= htmlspecialchars($imageDescription) ?></div>
                 <? endif ?>
               </a>
             </div>
@@ -153,4 +156,5 @@ $currentUrl = currentUrl();
     <? endforeach ?>
   <? endif ?>
 </body>
+
 </html>

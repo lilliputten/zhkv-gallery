@@ -10,7 +10,7 @@ $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
 
 $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
-$thumbSize = isset($_GET['size']) ? (int)$_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
+$thumbSize = isset($_GET['size']) ? (int) $_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
 
@@ -97,12 +97,12 @@ $encodedPath = str_replace('%2F', '/', rawurlencode($imagePath));
 $useFullMode = true;
 $previewMode = $useFullMode ? 'full' : 'preview';
 $previewUrl = 'thumb.php?mode=' . $previewMode . '&image=' . $encodedPath;
-$thumbUrl   = 'thumb.php?image='               . $encodedPath;
-$viewUrl    = 'view.php?image='                . $encodedPath;
+$thumbUrl = 'thumb.php?image=' . $encodedPath;
+$viewUrl = 'view.php?image=' . $encodedPath;
 if ($useRedirectMode) {
   $previewUrl = $previewMode . '/' . $encodedPath;
-  $thumbUrl   = 'thumb/'   . $encodedPath;
-  $viewUrl    = 'view/'    . $encodedPath;
+  $thumbUrl = 'thumb/' . $encodedPath;
+  $viewUrl = 'view/' . $encodedPath;
 }
 $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
 
@@ -119,7 +119,8 @@ $pageDescription = $description ? $description : basename($imagePath);
 ?>
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
   <base href="<? echo $baseUrl ?>" />
   <title><? echo htmlspecialchars($shortTitle) ?></title>
   <!-- OpenGraph Meta Tags -->
@@ -143,48 +144,52 @@ $pageDescription = $description ? $description : basename($imagePath);
   <link rel="stylesheet" href="view.css" />
   <style>
     .image {
-<? if ($maxWidth) { ?>
-      max-width: <?= $maxWidth ?>px;
-<? } ?>
+      <? if ($maxWidth) { ?>
+        max-width:
+          <?= $maxWidth ?>
+          px;
+      <? } ?>
       background-image: url("<?= $previewImageUrl ?>");
     }
   </style>
   <? include('common-headers-post.php') ?>
-  </head>
-  <body>
+</head>
+
+<body>
   <img class="image" src="<? echo $encodedPath ?>" border="0" />
 
   <div class="float-panel left bottom">
     <? if ($prevViewUrl): ?>
-    <a href="<? echo $prevViewUrl ?>" class="nav-button" title="Previous image"><i class="fa fa-chevron-left"></i></a>
+      <a href="<? echo $prevViewUrl ?>" class="nav-button" title="Previous image"><i class="fa fa-chevron-left"></i></a>
     <? endif ?>
     <a href="<? echo $baseUrl ?>" class="nav-button" title="Back to the gallery"><i class="fa fa-home"></i></a>
     <? if ($nextViewUrl): ?>
-    <a href="<? echo $nextViewUrl ?>" class="nav-button" title="Next image"><i class="fa fa-chevron-right"></i></a>
+      <a href="<? echo $nextViewUrl ?>" class="nav-button" title="Next image"><i class="fa fa-chevron-right"></i></a>
     <? endif ?>
   </div>
 
   <? if ($hasMetadata): ?>
-  <div class="float-panel right bottom">
-    <button class="nav-button" id="infoButton" title="Image information">
-      <i class="fa fa-info"></i>
-    </button>
-  </div>
+    <div class="float-panel right bottom">
+      <button class="nav-button" id="infoButton" title="Image information">
+        <i class="fa fa-info"></i>
+      </button>
+    </div>
   <? endif ?>
 
   <? if ($hasMetadata): ?>
-  <!-- Info Popup -->
-  <div class="info-popup" id="infoPopup">
-    <div class="popup-content">
-      <? if (!empty($imageTitle)): ?>
-      <div class="info-title"><? echo htmlspecialchars($imageTitle) ?></div>
-      <? endif ?>
-      <? if (!empty($description)): ?>
-      <div class="info-description"><? echo htmlspecialchars($description) ?></div>
-      <? endif ?>
+    <!-- Info Popup -->
+    <div class="info-popup" id="infoPopup">
+      <div class="popup-content">
+        <? if (!empty($imageTitle)): ?>
+          <div class="info-title"><? echo htmlspecialchars($imageTitle) ?></div>
+        <? endif ?>
+        <? if (!empty($description)): ?>
+          <div class="info-description"><? echo htmlspecialchars($description) ?></div>
+        <? endif ?>
+      </div>
     </div>
-  </div>
-  <script src="view.js" type="text/javascript"></script>
+    <script src="view.js" type="text/javascript"></script>
   <? endif ?>
-  </body>
+</body>
+
 </html>

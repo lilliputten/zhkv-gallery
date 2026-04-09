@@ -30,8 +30,9 @@ demo-site/
 ├── README.md           # Comprehensive project documentation
 ├── CHANGELOG.md        # Version history and change tracking
 ├── .htaccess           # Apache URL rewriting rules
-├── .config.json        # Default configuration file
-├── .config.local.json  # Optional local configuration overrides (gitignored)
+├── gallery.json        # Default configuration file
+├── gallery.local.json  # Optional local configuration overrides (gitignored)
+├── gallery.local.json.EXAMPLE # Example local configuration file
 ├── .cache.index        # Cached directory scan results (auto-generated, configurable)
 ├── .thumbs/            # Cached thumbnail images (auto-generated, configurable)
 ├── example/            # Example HTML template
@@ -145,7 +146,7 @@ http://localhost/thumb.php?show=folder/image.png
 **Functions**:
 
 #### `loadConfig()`
-Loads and merges configuration from `.config.json` and optional `.config.local.json`.
+Loads and merges configuration from `gallery.json` and optional `gallery.local.json`.
 
 **Returns**: Array of merged configuration values
 
@@ -193,7 +194,7 @@ RewriteRule ^view/(.+)$ view.php?show=$1 [QSA,L]
 
 ## Configuration
 
-### `.config.json` - Default Configuration
+### `gallery.json` - Default Configuration
 
 ```json
 {
@@ -212,9 +213,9 @@ RewriteRule ^view/(.+)$ view.php?show=$1 [QSA,L]
 - `thumbsDir` (string): Directory name for storing cached thumbnails (default: ".thumbs")
 - `indexCache` (string): Filename for directory scan cache (default: ".cache.index")
 
-### `.config.local.json` - Local Overrides (Optional)
+### `gallery.local.json` - Local Overrides (Optional)
 
-Create this file to override default settings without modifying `.config.json`. This file should be added to `.gitignore`.
+Create this file to override default settings without modifying `gallery.json`. This file should be added to `.gitignore`. You can copy `gallery.local.json.EXAMPLE` as a starting template.
 
 **Example**:
 ```json
@@ -327,7 +328,7 @@ The system uses a custom URL encoding approach to preserve forward slashes in pa
 ### Server Requirements
 - PHP 7.0+ (recommended: PHP 8.0+)
 - Apache web server with `mod_rewrite` (for clean URLs)
-- Write permissions for cache directory and file (configured in `.config.json`)
+- Write permissions for cache directory and file (configured in `gallery.json`)
 
 ### PHP Extensions
 - **Required**: None (base PHP)
@@ -355,7 +356,7 @@ The system uses a custom URL encoding approach to preserve forward slashes in pa
 
 **Optional Steps**:
 - Enable `.htaccess` for clean URLs (requires Apache mod_rewrite)
-- Create `.config.local.json` for custom settings
+- Copy `gallery.local.json.EXAMPLE` to `gallery.local.json` and customize settings
 - Adjust `thumbSize` in config for different thumbnail dimensions
 
 ---
@@ -427,7 +428,7 @@ chmod 644 <indexCache>
 
 ## Performance Tips
 
-1. **Use Caching**: Keep cache file and directory (configured in `.config.json`) intact
+1. **Use Caching**: Keep cache file and directory (configured in `gallery.json`) intact
 2. **Optimize Images**: Compress source images before uploading
 3. **Adjust Thumb Size**: Smaller thumbnails = faster generation (configure via `thumbSize`)
 4. **Customize Cache Paths**: Use fast storage for cache directories (configure via `thumbsDir` and `indexCache`)
