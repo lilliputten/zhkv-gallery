@@ -10,6 +10,15 @@ body {
 h1.title {
   color: #333;
   text-align: center;
+  margin-bottom: 10px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gallery-description {
+  font-size: 14px;
+  color: #999;
+  text-align: center;
   margin-bottom: 40px;
   max-width: 100%;
   overflow: hidden;

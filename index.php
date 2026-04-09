@@ -4,6 +4,7 @@ require_once __DIR__ . '/helpers.php';
 
 $config = loadConfig();
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
+$galleryDescription = isset($config['galleryDescription']) ? $config['galleryDescription'] : 'Image gallery with thumbnails and viewer';
 $thumbSize = isset($config['thumbSize']) ? $config['thumbSize'] : 150;
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
@@ -28,7 +29,7 @@ $currentUrl = currentUrl();
   <meta property="og:description" content="Image gallery with thumbnails and viewer" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="<?= htmlspecialchars($title) ?>" />
-  <meta name="twitter:description" content="Image gallery with thumbnails and viewer" />
+  <meta name="twitter:description" content="<?= htmlspecialchars($galleryDescription) ?>" />
   <meta property="og:url" content="<?= htmlspecialchars($currentUrl) ?>" />
   <meta property="og:site_name" content="<?= htmlspecialchars($title) ?>" />
   <?php
@@ -73,6 +74,7 @@ $currentUrl = currentUrl();
 </head>
 <body>
   <h1 class="title"><?= htmlspecialchars($title) ?></h1>
+  <p class="gallery-description"><?= htmlspecialchars($galleryDescription) ?></h1>
 
   <? if (empty($scanResults)): ?>
     <p style="text-align: center; color: #999;">No images found.</p>
