@@ -1,4 +1,11 @@
 <?php
+
+// Set isDev based on environment - true if port is 8000
+$serverPort = isset($_SERVER['SERVER_PORT']) ? (int)$_SERVER['SERVER_PORT'] : 0;
+$isDev = ($serverPort === 8000);
+
+$basePath = str_replace('\\', '/', __DIR__);
+
 /**
  * Load configuration from a folder by merging .config.json and .config.local.json files
  * This function accepts the config array by reference and extends it with folder-specific config
@@ -90,6 +97,49 @@ function loadConfig($imagePath = null) {
   return $config;
 }
 
+function removeFileExtension($file) {
+  $filePathWithoutExt = pathinfo($file, PATHINFO_FILENAME);
+  $fileDir = pathinfo($file, PATHINFO_DIRNAME);
+  return ($fileDir !== '.') ? $fileDir . '/' . $filePathWithoutExt : $filePathWithoutExt;
+}
+
+/**
+ * Read image title and description from {IMAGE}.md file
+ * Expected format:
+ * ## {title}
+ *
+ * {description}
+ *
+ * @param string $imagePath Path to the image file
+ * @return array Array with 'title' and 'description' keys (may be empty strings if not found)
+ */
+function loadImageMetadataFromMarkdown($imagePath) {
+  global $basePath;
+
+  $result = [
+    'title' => '',
+    'description' => ''
+  ];
+
+  // Remove image extension from path before adding .md
+  $mdFile = $basePath . '/' . removeFileExtension($imagePath) . '.md';
+
+  if (!file_exists($mdFile)) {
+    return $result;
+  }
+
+  $content = file_get_contents($mdFile);
+
+  // Match the pattern: ## {title}\n\n{description}
+  // The description is everything after ## {title} and the blank line
+  if (preg_match('/^##\s+(.+?)\s*\n\s*\n(.*)$/s', $content, $matches)) {
+    $result['title'] = trim($matches[1]);
+    $result['description'] = trim($matches[2]);
+  }
+
+  return $result;
+}
+
 /**
  * Get cached image list or create cache if needed
  * Returns a flattened list of all images for navigation
@@ -99,6 +149,8 @@ function loadConfig($imagePath = null) {
  * @return array Array containing image list and navigation info
  */
 function getImageList($config, $currentImagePath = null) {
+  global $isDev;
+
   $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
   $indexCacheValidHours = isset($config['indexCacheValidHours']) ? $config['indexCacheValidHours'] : 30;
 
@@ -110,7 +162,7 @@ function getImageList($config, $currentImagePath = null) {
   $scanResults = [];
 
   // Check if cache file exists and is still valid
-  if (file_exists($cacheFile) && !$cacheExpired) {
+  if (!$isDev && file_exists($cacheFile) && !$cacheExpired) {
     // Read from cache
     $cachedData = file_get_contents($cacheFile);
     $scanResults = json_decode($cachedData, true);

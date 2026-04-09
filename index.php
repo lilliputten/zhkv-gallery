@@ -3,15 +3,15 @@
 require_once __DIR__ . '/helpers.php';
 
 $config = loadConfig();
-$title = isset($config['title']) ? $config['title'] : 'Image Gallery';
+$galleryTitle = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $galleryDescription = isset($config['galleryDescription']) ? $config['galleryDescription'] : 'Image gallery with thumbnails and viewer';
 $thumbSize = isset($config['thumbSize']) ? $config['thumbSize'] : 150;
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
-$useRedirectMode = isset($_GET['redirect']) ? ($_GET['redirect'] === '1' || $_GET['redirect'] === 'true') : (isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false);
-$thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
-$indexCacheValidMins = isset($config['indexCacheValidHours']) ? $config['indexCacheValidHours'] : 30;
-$indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
+$useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
+// $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
+// $indexCacheValidMins = isset($config['indexCacheValidHours']) ? $config['indexCacheValidHours'] : 30;
+// $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
 
 // Get image list using the shared cache function
 $imageData = getImageList($config);
@@ -22,16 +22,16 @@ $currentUrl = currentUrl();
 <!DOCTYPE html>
 <html>
 <head>
-  <title><?= htmlspecialchars($title) ?></title>
+  <title><?= htmlspecialchars($galleryTitle) ?></title>
   <!-- OpenGraph & Twitter Card Meta Tags -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="<?= htmlspecialchars($title) ?>" />
+  <meta property="og:title" content="<?= htmlspecialchars($galleryTitle) ?>" />
   <meta property="og:description" content="Image gallery with thumbnails and viewer" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="<?= htmlspecialchars($title) ?>" />
+  <meta name="twitter:title" content="<?= htmlspecialchars($galleryTitle) ?>" />
   <meta name="twitter:description" content="<?= htmlspecialchars($galleryDescription) ?>" />
   <meta property="og:url" content="<?= htmlspecialchars($currentUrl) ?>" />
-  <meta property="og:site_name" content="<?= htmlspecialchars($title) ?>" />
+  <meta property="og:site_name" content="<?= htmlspecialchars($galleryTitle) ?>" />
   <?php
   $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
   $firstImagePath = null;
@@ -51,7 +51,7 @@ $currentUrl = currentUrl();
       $previewUrl = 'preview/' . $encodedPath;
       $thumbUrl   = 'thumb/'   . $encodedPath;
     }
-    $firstImageFullPath = __DIR__ . '/' . $firstImagePath;
+    $firstImageFullPath = $basePath . '/' . $firstImagePath;
     $imageInfo = getimagesize($firstImageFullPath);
     $aspectRatio = $imageInfo[0] / $imageInfo[1];
     $calculatedHeight = floor($previewSize / $aspectRatio);
@@ -73,8 +73,8 @@ $currentUrl = currentUrl();
   <? include('common-headers-post.php') ?>
 </head>
 <body>
-  <h1 class="title"><?= htmlspecialchars($title) ?></h1>
-  <p class="gallery-description"><?= htmlspecialchars($galleryDescription) ?></h1>
+  <h1 class="title"><?= htmlspecialchars($galleryTitle) ?></h1>
+  <p class="gallery-description"><?= htmlspecialchars($galleryDescription) ?></p>
 
   <? if (empty($scanResults)): ?>
     <p style="text-align: center; color: #999;">No images found.</p>
@@ -104,35 +104,44 @@ $currentUrl = currentUrl();
               }
 
               // Load image metadata from JSON file if exists
-              $imageName = $image['name'];
+              $imageTitle = $image['name'];
               $imageDescription = "";
 
-              // Remove image extension from path before adding .json
-              $imagePathWithoutExt = pathinfo($image['path'], PATHINFO_FILENAME);
-              $imageDir = pathinfo($image['path'], PATHINFO_DIRNAME);
-              $jsonPath = ($imageDir !== '.') ? $imageDir . '/' . $imagePathWithoutExt : $imagePathWithoutExt;
-              $jsonFile = __DIR__ . '/' . $jsonPath . '.json';
-              if (file_exists($jsonFile)) {
-                $jsonData = file_get_contents($jsonFile);
-                $metadata = json_decode($jsonData, true);
+              // First, try to load from .md file
+              $mdMetadata = loadImageMetadataFromMarkdown($image['path']);
+              if (!empty($mdMetadata['title'])) {
+                $imageTitle = $mdMetadata['title'];
+              }
+              if (!empty($mdMetadata['description'])) {
+                $imageDescription = $mdMetadata['description'];
+              }
 
-                if ($metadata && !empty($metadata['name'])) {
-                  $imageName = $metadata['name'];
-                }
-                if ($metadata && !empty($metadata['description'])) {
-                  $imageDescription = $metadata['description'];
+              // If no .md file or incomplete data, try JSON file as fallback
+              if (empty($mdMetadata['title']) || empty($mdMetadata['description'])) {
+                // Remove image extension from path before adding .json
+                $jsonFile = $basePath . '/' . removeFileExtension($image['path']) . '.json';
+                if (file_exists($jsonFile)) {
+                  $jsonData = file_get_contents($jsonFile);
+                  $metadata = json_decode($jsonData, true);
+
+                  if ($metadata && !empty($metadata['name']) && empty($mdMetadata['title'])) {
+                    $imageTitle = $metadata['name'];
+                  }
+                  if ($metadata && !empty($metadata['description']) && empty($mdMetadata['description'])) {
+                    $imageDescription = $metadata['description'];
+                  }
                 }
               }
               ?>
               <a href="<?= $viewUrl ?>">
                 <img
                   src="<?= $thumbUrl ?>"
-                  alt="<?= htmlspecialchars($imageName) ?>"
+                  alt="<?= htmlspecialchars($imageTitle) ?>"
                   width="<?= htmlspecialchars($thumbSize) ?>"
                   height="<?= htmlspecialchars($thumbSize) ?>"
                   loading="lazy"
                 />
-                <div class="image-name"><?= htmlspecialchars($imageName) ?></div>
+                <div class="image-name"><?= htmlspecialchars($imageTitle) ?></div>
                 <? if ($imageDescription): ?>
                 <div class="image-description"><?= htmlspecialchars($imageDescription) ?></div>
                 <? endif ?>

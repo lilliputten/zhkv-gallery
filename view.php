@@ -9,14 +9,30 @@ $config = loadConfig($imagePath);
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
 
-// Image properties
-$name = isset($config['name']) ? $config['name'] : Null;
-$description = isset($config['description']) ? $config['description'] : Null;
-
-$useRedirectMode = isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
+$useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
 $thumbSize = isset($_GET['size']) ? (int)$_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
+
+// Image properties - try to load from .md file first
+$imageTitle = '';
+$description = '';
+
+$mdMetadata = loadImageMetadataFromMarkdown($imagePath);
+if (!empty($mdMetadata['title'])) {
+  $imageTitle = $mdMetadata['title'];
+}
+if (!empty($mdMetadata['description'])) {
+  $description = $mdMetadata['description'];
+}
+
+// If no .md file or incomplete data, fallback to config
+if (empty($imageTitle)) {
+  $imageTitle = isset($config['name']) ? $config['name'] : '';
+}
+if (empty($description)) {
+  $description = isset($config['description']) ? $config['description'] : '';
+}
 
 // Security: Validate the path to prevent directory traversal attacks
 if (empty($imagePath)) {
@@ -27,8 +43,8 @@ if (empty($imagePath)) {
 $imagePath = urldecode($imagePath);
 
 // Prevent directory traversal attacks
-$basePath = realpath(__DIR__);
-$fullPath = realpath(__DIR__ . '/' . $imagePath);
+$basePath = realpath($basePath);
+$fullPath = realpath($basePath . '/' . $imagePath);
 
 if ($fullPath === false || strpos($fullPath, $basePath) !== 0) {
   die('Invalid image path');
@@ -55,7 +71,7 @@ $imageData = getImageList($config, $imagePath);
 $navInfo = $imageData['navInfo'];
 
 // Check if we have any metadata to display
-$hasMetadata = !empty($name) || !empty($description);
+$hasMetadata = !empty($imageTitle) || !empty($description);
 
 // Generate view URLs for previous and next images
 $prevViewUrl = '';
@@ -96,7 +112,7 @@ $thumbImageUrl = $baseUrl . $thumbUrl;
 $previewImageUrl = $baseUrl . $previewUrl;
 $currentUrl = currentUrl();
 
-$shortTitle = $name ? $name : $imagePath;
+$shortTitle = $imageTitle ? $imageTitle : $imagePath;
 $pageTitle = $title . ': ' . $shortTitle;
 $pageDescription = $description ? $description : basename($imagePath);
 
@@ -160,8 +176,8 @@ $pageDescription = $description ? $description : basename($imagePath);
   <!-- Info Popup -->
   <div class="info-popup" id="infoPopup">
     <div class="popup-content">
-      <? if (!empty($name)): ?>
-      <div class="info-title"><? echo htmlspecialchars($name) ?></div>
+      <? if (!empty($imageTitle)): ?>
+      <div class="info-title"><? echo htmlspecialchars($imageTitle) ?></div>
       <? endif ?>
       <? if (!empty($description)): ?>
       <div class="info-description"><? echo htmlspecialchars($description) ?></div>
