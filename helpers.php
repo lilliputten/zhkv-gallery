@@ -57,7 +57,7 @@ function currentUrl()
 function faviconTag()
 {
   if (file_exists(__DIR__ . '/favicon.ico')) {
-    echo '<link rel="icon" href="favicon.ico" type="image/x-icon" />' . "\n";
+    echo '  <link rel="icon" href="favicon.ico" type="image/x-icon" />' . "\n";
   }
 }
 
@@ -136,11 +136,11 @@ function loadImageMetadataFromMarkdown($imagePath)
 
   $content = file_get_contents($mdFile);
 
-  // Match the pattern: ## {title}\n\n{description}
-  // The description is everything after ## {title} and the blank line
-  if (preg_match('/^#+\s+(.+?)\s*\n\s*\n(.*)$/s', $content, $matches)) {
+  // Match the pattern: ## {title}\n\n{description} or just ## {title}
+  // The description is everything after ## {title} and the blank line (optional)
+  if (preg_match('/^#+\s+(.+?)(?:\s*\n\s*\n(.*))?$/s', $content, $matches)) {
     $result['title'] = trim($matches[1]);
-    $result['description'] = trim($matches[2]);
+    $result['description'] = isset($matches[2]) ? trim($matches[2]) : '';
   }
 
   return $result;

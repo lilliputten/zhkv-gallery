@@ -38,10 +38,10 @@ $currentUrl = currentUrl();
   <meta property="og:description" content="Image gallery with thumbnails and viewer" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="<?= htmlspecialchars($galleryTitle) ?>" />
-  <meta name="twitter:description" content="<?= htmlspecialchars($galleryDescription) ?>" />
+  <meta name="twitter:description" content="<?= htmlspecialchars(preg_replace('/\s+/', ' ', $galleryDescription)) ?>" />
   <meta property="og:url" content="<?= htmlspecialchars($currentUrl) ?>" />
   <meta property="og:site_name" content="<?= htmlspecialchars($galleryTitle) ?>" />
-  <?php
+<?php
   $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
   $firstImagePath = null;
   if (!empty($scanResults)) {
@@ -71,36 +71,38 @@ $currentUrl = currentUrl();
     $ogImageUrl = $baseUrl . $previewUrl;
     $thumbImageUrl = $baseUrl . $thumbUrl;
     ?>
-    <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
-    <meta property="og:image:width" content="<?= $thumbSize ?>" />
-    <meta property="og:image:height" content="<?= $thumbSize ?>" />
-    <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
-    <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
-    <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
-  <? endif ?>
+  <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
+  <meta property="og:image:width" content="<?= $thumbSize ?>" />
+  <meta property="og:image:height" content="<?= $thumbSize ?>" />
+  <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
+  <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
+  <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
+<? endif ?>
+  <!-- Shared headers -->
+<? include('common-headers-post.php') ?>
   <link rel="stylesheet" href="index.css" />
-  <? include('common-headers-post.php') ?>
 </head>
 
 <body>
   <h1 class="title"><?= htmlspecialchars($galleryTitle) ?></h1>
-  <p class="gallery-description"><?= htmlspecialchars($galleryDescription) ?></p>
+  <p class="gallery-description"><?= htmlspecialchars(preg_replace('/\s+/', ' ', $galleryDescription)) ?></p>
 
-  <? if (empty($scanResults)): ?>
+<? if (empty($scanResults)): ?>
     <p style="text-align: center; color: #999;">No images found.</p>
-  <? else: ?>
-    <? foreach ($scanResults as $folderPath => $folderData): ?>
+<? else: ?>
+<? foreach ($scanResults as $folderPath => $folderData): ?>
       <a name="<?= $folderPath ?>"></a>
       <div class="section">
         <h2 class="section-title">
           <?= htmlspecialchars($folderData['name']) ?>
+
           <a class="anchor-link" href="#<?= $folderPath ?>"><i class="fa fa-link"></i></a>
         </h2>
         <div class="image-grid"
           style="grid-template-columns: repeat(auto-fill, minmax(<?= htmlspecialchars($thumbSize) ?>px, 1fr))">
-          <? foreach ($folderData['images'] as $image): ?>
+<? foreach ($folderData['images'] as $image): ?>
             <div class="image-item">
-              <?php
+<?php
               $encodedPath = str_replace('%2F', '/', rawurlencode($image['path']));
               $previewUrl = 'thumb.php?mode=preview&image=' . $encodedPath;
               $thumbUrl = 'thumb.php?image=' . $encodedPath;
@@ -144,17 +146,26 @@ $currentUrl = currentUrl();
               <a href="<?= $viewUrl ?>">
                 <img src="<?= $thumbUrl ?>" alt="<?= htmlspecialchars($imageTitle) ?>"
                   width="<?= htmlspecialchars($thumbSize) ?>" height="<?= htmlspecialchars($thumbSize) ?>" loading="lazy" />
-                <div class="image-name"><?= htmlspecialchars($imageTitle) ?></div>
-                <? if ($imageDescription): ?>
-                  <div class="image-description"><?= htmlspecialchars($imageDescription) ?></div>
-                <? endif ?>
+                <div class="image-name">
+                  <?= htmlspecialchars($imageTitle) ?>
+
+                </div>
+<? if ($imageDescription): ?>
+                <div class="image-description">
+                  <?= htmlspecialchars(preg_replace('/\s+/', ' ', $imageDescription)) ?>
+
+                </div>
+<? endif ?>
               </a>
             </div>
-          <? endforeach ?>
+<? endforeach ?>
         </div>
       </div>
-    <? endforeach ?>
-  <? endif ?>
+<? endforeach ?>
+<? endif ?>
+
+  <!-- Shared scripts -->
+<? include('common-html-footer.php') ?>
 </body>
 
 </html>
