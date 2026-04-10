@@ -238,8 +238,13 @@ function getImageList($config, $currentImagePath = null)
             return strcasecmp($a['name'], $b['name']);
           });
 
+          // Load folder metadata from gallery.md if exists
+          $folderMetadata = loadImageMetadataFromMarkdown($relativePath . '/gallery');
+
           $scanResults[$relativePath] = [
             'name' => str_replace('-', ' ', $dirName),
+            'title' => $folderMetadata['title'],
+            'description' => $folderMetadata['description'],
             'images' => $images
           ];
         }
@@ -322,4 +327,20 @@ function dieWithError($message, $code = 400)
   http_response_code($code);
   header('Content-Type: text/plain');
   exit($message);
+}
+
+/**
+ * @param string|null $description
+ * @param [boolean] $specialChars
+ * @return string
+ */
+function prepareRichText($description, $specialChars = true) {
+  if (!isset($description)) {
+    return '';
+  }
+  $description = trim($description);
+  if (empty($description)) {
+    return '';
+  }
+  return preg_replace('/\s+/', ' ', $description);
 }

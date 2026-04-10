@@ -125,17 +125,17 @@ $pageDescription = $description ? $description : basename($imagePath);
   <title><?= htmlspecialchars($shortTitle) ?></title>
   <!-- OpenGraph Meta Tags -->
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="<?= htmlspecialchars($title) ?>" />
-  <meta property="og:title" content="<?= htmlspecialchars($shortTitle) ?>" />
-  <meta property="og:description" content="<?= htmlspecialchars(preg_replace('/\s+/', ' ', $pageDescription)) ?>" />
+  <meta property="og:site_name" content="<?= prepareRichText($title) ?>" />
+  <meta property="og:title" content="<?= prepareRichText($shortTitle) ?>" />
+  <meta property="og:description" content="<?= prepareRichText($pageDescription) ?>" />
   <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
   <meta property="og:image:width" content="<?= $thumbSize ?>" />
   <meta property="og:image:height" content="<?= $thumbSize ?>" />
   <meta property="og:url" content="<?= htmlspecialchars($currentUrl) ?>" />
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="<?= htmlspecialchars($shortTitle) ?>" />
-  <meta name="twitter:description" content="<?= preg_replace('/\s+/', ' ', htmlspecialchars($pageDescription)) ?>" />
+  <meta name="twitter:title" content="<?= prepareRichText($shortTitle) ?>" />
+  <meta name="twitter:description" content="<?= prepareRichText($pageDescription) ?>" />
   <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
   <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
   <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
@@ -155,7 +155,7 @@ $pageDescription = $description ? $description : basename($imagePath);
 </head>
 
 <body>
-  <img class="image" src="<?= $encodedPath ?>" border="0" />
+  <img class="image" src="<?= $encodedPath ?>" border="0" loading="lazy" />
 
   <div class="float-panel left bottom">
 <? if ($prevViewUrl): ?>
@@ -180,10 +180,10 @@ $pageDescription = $description ? $description : basename($imagePath);
     <div class="info-popup" id="infoPopup">
       <div class="popup-content">
 <? if (!empty($imageTitle)): ?>
-          <div class="info-title"><?= htmlspecialchars($imageTitle) ?></div>
+          <div class="info-title"><?= prepareRichText($imageTitle) ?></div>
 <? endif ?>
 <? if (!empty($description)): ?>
-          <div class="info-description"><?= htmlspecialchars(preg_replace('/\s+/', ' ', $description)) ?></div>
+          <div class="info-description"><?= prepareRichText($description) ?></div>
 <? endif ?>
       </div>
     </div>

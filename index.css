@@ -31,16 +31,34 @@ h1.title {
   border-radius: 8px;
   box-shadow: 0 0 30px rgba(0,0,0,0.1);
 }
+.section-header {
+  border-bottom: 1px solid #eee;
+  margin-bottom: 20px;
+}
 .section-title {
   color: #2c3e50;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: normal;
 }
+.section-description {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 968px) {
+  .section-description,
+  .section-title {
+    text-align: center;
+  }
+}
+
 .anchor-link {
   color: #999;
   opacity: 0.5;
@@ -50,11 +68,6 @@ h1.title {
 }
 .anchor-link:hover {
   opacity: 0.8;
-}
-@media (max-width: 968px) {
-  .section-title {
-    text-align: center;
-  }
 }
 .image-grid {
   display: grid;

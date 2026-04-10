@@ -31,16 +31,16 @@ $currentUrl = currentUrl();
 <html>
 
 <head>
-  <title><?= htmlspecialchars($galleryTitle) ?></title>
+  <title><?= prepareRichText($galleryTitle) ?></title>
   <!-- OpenGraph & Twitter Card Meta Tags -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="<?= htmlspecialchars($galleryTitle) ?>" />
-  <meta property="og:description" content="Image gallery with thumbnails and viewer" />
+  <meta property="og:title" content="<?= prepareRichText($galleryTitle) ?>" />
+  <meta property="og:description" content="<?= prepareRichText($galleryDescription) ?>" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="<?= htmlspecialchars($galleryTitle) ?>" />
-  <meta name="twitter:description" content="<?= htmlspecialchars(preg_replace('/\s+/', ' ', $galleryDescription)) ?>" />
+  <meta name="twitter:title" content="<?= prepareRichText($galleryTitle) ?>" />
+  <meta name="twitter:description" content="<?= prepareRichText($galleryDescription) ?>" />
   <meta property="og:url" content="<?= htmlspecialchars($currentUrl) ?>" />
-  <meta property="og:site_name" content="<?= htmlspecialchars($galleryTitle) ?>" />
+  <meta property="og:site_name" content="<?= prepareRichText($galleryTitle) ?>" />
 <?php
   $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
   $firstImagePath = null;
@@ -96,8 +96,8 @@ $currentUrl = currentUrl();
 </head>
 
 <body>
-  <h1 class="title"><?= htmlspecialchars($galleryTitle) ?></h1>
-  <p class="gallery-description"><?= htmlspecialchars(preg_replace('/\s+/', ' ', $galleryDescription)) ?></p>
+  <h1 class="title"><?= prepareRichText($galleryTitle) ?></h1>
+  <p class="gallery-description"><?= prepareRichText($galleryDescription) ?></p>
 
 <? if (empty($scanResults)): ?>
     <p style="text-align: center; color: #999;">No images found.</p>
@@ -105,11 +105,16 @@ $currentUrl = currentUrl();
 <? foreach ($scanResults as $folderPath => $folderData): ?>
       <a name="<?= $folderPath ?>"></a>
       <div class="section">
-        <h2 class="section-title">
-          <?= htmlspecialchars($folderData['name']) ?>
+        <div class="section-header">
+          <h2 class="section-title">
+            <?= prepareRichText(!empty($folderData['title']) ? $folderData['title'] : $folderData['name']) ?>
 
-          <a class="anchor-link" href="#<?= $folderPath ?>"><i class="fa fa-link"></i></a>
-        </h2>
+            <a class="anchor-link" href="#<?= $folderPath ?>"><i data-lucide="link"></i></a>
+          </h2>
+<? if (!empty($folderData['description'])): ?>
+          <p class="section-description"><?= prepareRichText($folderData['description']) ?></p>
+<? endif; ?>
+        </div>
         <div class="image-grid"
           style="grid-template-columns: repeat(auto-fill, minmax(<?= htmlspecialchars($thumbSize) ?>px, 1fr))">
 <? foreach ($folderData['images'] as $image): ?>
@@ -164,7 +169,7 @@ $currentUrl = currentUrl();
                 </div>
 <? if ($imageDescription): ?>
                 <div class="image-description">
-                  <?= htmlspecialchars(preg_replace('/\s+/', ' ', $imageDescription)) ?>
+                  <?= prepareRichText($imageDescription) ?>
 
                 </div>
 <? endif ?>
