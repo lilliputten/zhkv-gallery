@@ -3,13 +3,6 @@
 // Load helpers
 require_once __DIR__ . '/helpers.php';
 
-function thumbError($message, $code = 400)
-{
-  http_response_code($code);
-  header('Content-Type: text/plain');
-  exit($message);
-}
-
 // Get the image path from the URL parameter
 $imagePath = isset($_GET['image']) ? $_GET['image'] : '';
 $preview = isset($_GET['mode']) ? $_GET['mode'] === 'preview' : false;
@@ -23,7 +16,7 @@ $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs
 
 // Security: Validate the path to prevent directory traversal attacks
 if (empty($imagePath)) {
-  thumbError('No image specified');
+  dieWithError('No image specified');
 }
 
 // Decode URL encoding (e.g., %20 becomes space)
@@ -34,23 +27,28 @@ $basePath = realpath(__DIR__);
 $fullPath = realpath(__DIR__ . '/' . $imagePath);
 
 if ($fullPath === false || strpos($fullPath, $basePath) !== 0) {
-  thumbError('Invalid image path', 403);
+  dieWithError('Invalid image path', 403);
 }
 
 // Check if file exists
 if (!file_exists($fullPath)) {
-  thumbError('Image not found: ' . $imagePath, 404);
+  dieWithError('Image not found: ' . $imagePath, 404);
 }
 
 // Get image info
 $imageInfo = getimagesize($fullPath);
 if ($imageInfo === false) {
-  thumbError('Not a valid image file', 422);
+  dieWithError('Not a valid image file: ' . $imagePath, 422);
 }
 
 $mimeType = $imageInfo['mime'];
 $originalWidth = $imageInfo[0];
 $originalHeight = $imageInfo[1];
+
+// Validate image dimensions
+if ($originalWidth <= 0 || $originalHeight <= 0) {
+  dieWithError('Invalid image dimensions: ' . $originalWidth . 'x' . $originalHeight, 422);
+}
 
 // Define thumbnail dimensions (square) - using config value
 // $thumbSize is already set from config above
@@ -92,7 +90,7 @@ $cachePath = $thumbsPath . '/' . $cacheFilename;
 if (file_exists($cachePath)) {
   $resolvedCache = realpath($cachePath);
   if ($resolvedCache === false || strpos($resolvedCache, realpath($thumbsPath)) !== 0) {
-    thumbError('Invalid cache path', 403);
+    dieWithError('Invalid cache path', 403);
   }
   header('Content-Type: image/webp');
   header('Cache-Control: public, max-age=86400');
@@ -105,23 +103,23 @@ if (extension_loaded('gd')) {
   // Create image resource based on type
   switch ($mimeType) {
     case 'image/jpeg':
-      $sourceImage = imagecreatefromjpeg($fullPath);
+      $sourceImage = @imagecreatefromjpeg($fullPath);
       break;
     case 'image/png':
-      $sourceImage = imagecreatefrompng($fullPath);
+      $sourceImage = @imagecreatefrompng($fullPath);
       break;
     case 'image/gif':
-      $sourceImage = imagecreatefromgif($fullPath);
+      $sourceImage = @imagecreatefromgif($fullPath);
       break;
     case 'image/webp':
-      $sourceImage = imagecreatefromwebp($fullPath);
+      $sourceImage = @imagecreatefromwebp($fullPath);
       break;
     default:
-      thumbError('Unsupported image format', 415);
+      dieWithError('Unsupported image format: ' . $mimeType, 415);
   }
 
   if (!$sourceImage) {
-    thumbError('Failed to create image resource', 500);
+    dieWithError('Failed to create image resource from: ' . $imagePath . ' (format: ' . $mimeType . ')', 500);
   }
 
   // Create square thumbnail image
@@ -202,11 +200,11 @@ elseif (class_exists('Imagick')) {
     echo $imagick->getImageBlob();
     $imagick->destroy();
   } catch (Exception $e) {
-    thumbError('ImageMagick error: ' . $e->getMessage(), 500);
+    dieWithError('ImageMagick error: ' . $e->getMessage(), 500);
   }
 }
 
 // No image library available
 else {
-  thumbError('No image processing library available. Enable GD or ImageMagick in php.ini.', 500);
+  dieWithError('No image processing library available. Enable GD or ImageMagick in php.ini.', 500);
 }

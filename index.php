@@ -10,7 +10,7 @@ $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
 $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
 // $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
-// $indexCacheValidMins = isset($config['indexCacheValidHours']) ? $config['indexCacheValidHours'] : 30;
+// $indexCacheValidMins = isset($config['indexCacheValidMins']) ? $config['indexCacheValidMins'] : 30;
 // $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
 
 // Get image list using the shared cache function
@@ -44,15 +44,27 @@ $currentUrl = currentUrl();
 <?php
   $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
   $firstImagePath = null;
+  $firstImageInfo = null;
+
+  // Iterate through scanResults to find the first existing image with valid image info
   if (!empty($scanResults)) {
-    $firstFolder = reset($scanResults);
-    if (!empty($firstFolder['images'])) {
-      $firstImage = reset($firstFolder['images']);
-      $firstImagePath = $firstImage['path'];
+    foreach ($scanResults as $folder) {
+      if (!empty($folder['images'])) {
+        foreach ($folder['images'] as $image) {
+          $candidatePath = $basePath . '/' . $image['path'];
+          $candidateInfo = @getimagesize($candidatePath);
+          if ($candidateInfo !== false) {
+            // Found a valid image
+            $firstImagePath = $image['path'];
+            $firstImageInfo = $candidateInfo;
+            break 2; // Break out of both foreach loops
+          }
+        }
+      }
     }
   }
 
-  if ($firstImagePath):
+  if ($firstImagePath && $firstImageInfo) {
     $encodedPath = str_replace('%2F', '/', rawurlencode($firstImagePath));
     $previewUrl = 'thumb.php?mode=preview&image=' . $encodedPath;
     $thumbUrl = 'thumb.php?image=' . $encodedPath;
@@ -60,9 +72,7 @@ $currentUrl = currentUrl();
       $previewUrl = 'preview/' . $encodedPath;
       $thumbUrl = 'thumb/' . $encodedPath;
     }
-    $firstImageFullPath = $basePath . '/' . $firstImagePath;
-    $imageInfo = getimagesize($firstImageFullPath);
-    $aspectRatio = $imageInfo[0] / $imageInfo[1];
+    $aspectRatio = $firstImageInfo[0] / $firstImageInfo[1];
     $calculatedHeight = floor($previewSize / $aspectRatio);
     if ($maxHeightRatio && $calculatedHeight > $previewSize * $maxHeightRatio) {
       $calculatedHeight = $previewSize * $maxHeightRatio;
@@ -70,14 +80,16 @@ $currentUrl = currentUrl();
     // Build URLs without escaping slashes
     $ogImageUrl = $baseUrl . $previewUrl;
     $thumbImageUrl = $baseUrl . $thumbUrl;
-    ?>
+?>
   <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
   <meta property="og:image:width" content="<?= $thumbSize ?>" />
   <meta property="og:image:height" content="<?= $thumbSize ?>" />
   <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
   <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
   <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
-<? endif ?>
+<?
+  }
+?>
   <!-- Shared headers -->
 <? include('common-headers-post.php') ?>
   <link rel="stylesheet" href="index.css" />

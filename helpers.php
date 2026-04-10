@@ -159,12 +159,12 @@ function getImageList($config, $currentImagePath = null)
   global $isDev;
 
   $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
-  $indexCacheValidHours = isset($config['indexCacheValidHours']) ? $config['indexCacheValidHours'] : 30;
+  $indexCacheValidMins = isset($config['indexCacheValidMins']) ? $config['indexCacheValidMins'] : 30;
 
   $cacheFile = $indexCache ? __DIR__ . '/' . $indexCache : '';
   $cacheExpired = $cacheFile && file_exists($cacheFile)
-    && $indexCacheValidHours
-    && (time() - filemtime($cacheFile)) > $indexCacheValidHours * 60 * 60;
+    && $indexCacheValidMins
+    && (time() - filemtime($cacheFile)) > $indexCacheValidMins * 60;
 
   $scanResults = [];
 
@@ -315,4 +315,11 @@ function getImageList($config, $currentImagePath = null)
     'flat' => $flatImageList,      // Flat list for navigation
     'navInfo' => $navInfo          // Navigation information if current image specified
   ];
+}
+
+function dieWithError($message, $code = 400)
+{
+  http_response_code($code);
+  header('Content-Type: text/plain');
+  exit($message);
 }
