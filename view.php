@@ -104,13 +104,13 @@ if ($useRedirectMode) {
   $thumbUrl = 'thumb/' . $encodedPath;
   $viewUrl = 'view/' . $encodedPath;
 }
-$baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
+$baseUrl = getCurrentUrlPrefix();
 
 // Build URLs without escaping issues
 $ogImageUrl = $baseUrl . $previewUrl;
 $thumbImageUrl = $baseUrl . $thumbUrl;
 $previewImageUrl = $baseUrl . $previewUrl;
-$currentUrl = currentUrl();
+$getCurrentUrl = getCurrentUrl();
 
 $shortTitle = $imageTitle ? $imageTitle : $imagePath;
 $pageTitle = $title . ': ' . $shortTitle;
@@ -131,7 +131,7 @@ $pageDescription = $description ? $description : basename($imagePath);
   <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
   <meta property="og:image:width" content="<?= $thumbSize ?>" />
   <meta property="og:image:height" content="<?= $thumbSize ?>" />
-  <meta property="og:url" content="<?= htmlspecialchars($currentUrl) ?>" />
+  <meta property="og:url" content="<?= htmlspecialchars($getCurrentUrl) ?>" />
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="<?= prepareRichText($shortTitle) ?>" />

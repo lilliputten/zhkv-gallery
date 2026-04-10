@@ -25,7 +25,31 @@ if (!empty($mdMetadata['description'])) {
   $galleryDescription = $mdMetadata['description'];
 }
 
-$currentUrl = currentUrl();
+// Urls
+$baseUrl = getCurrentUrlPrefix();
+$currentUrl = getCurrentUrl();
+
+// Try to find thumbnail image...
+$firstImagePath = null;
+$firstImageInfo = null;
+// Iterate through scanResults to find the first existing image with valid image info
+if (!empty($scanResults)) {
+  foreach ($scanResults as $folder) {
+    if (!empty($folder['images'])) {
+      foreach ($folder['images'] as $image) {
+        $candidatePath = $basePath . '/' . $image['path'];
+        $candidateInfo = @getimagesize($candidatePath);
+        if ($candidateInfo !== false) {
+          // Found a valid image
+          $firstImagePath = $image['path'];
+          $firstImageInfo = $candidateInfo;
+          break 2; // Break out of both foreach loops
+        }
+      }
+    }
+  }
+}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -41,28 +65,7 @@ $currentUrl = currentUrl();
   <meta name="twitter:description" content="<?= prepareRichText($galleryDescription) ?>" />
   <meta property="og:url" content="<?= htmlspecialchars($currentUrl) ?>" />
   <meta property="og:site_name" content="<?= prepareRichText($galleryTitle) ?>" />
-<?php
-  $baseUrl = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
-  $firstImagePath = null;
-  $firstImageInfo = null;
-
-  // Iterate through scanResults to find the first existing image with valid image info
-  if (!empty($scanResults)) {
-    foreach ($scanResults as $folder) {
-      if (!empty($folder['images'])) {
-        foreach ($folder['images'] as $image) {
-          $candidatePath = $basePath . '/' . $image['path'];
-          $candidateInfo = @getimagesize($candidatePath);
-          if ($candidateInfo !== false) {
-            // Found a valid image
-            $firstImagePath = $image['path'];
-            $firstImageInfo = $candidateInfo;
-            break 2; // Break out of both foreach loops
-          }
-        }
-      }
-    }
-  }
+<?
 
   if ($firstImagePath && $firstImageInfo) {
     $encodedPath = str_replace('%2F', '/', rawurlencode($firstImagePath));
@@ -119,7 +122,7 @@ $currentUrl = currentUrl();
           style="grid-template-columns: repeat(auto-fill, minmax(<?= htmlspecialchars($thumbSize) ?>px, 1fr))">
 <? foreach ($folderData['images'] as $image): ?>
             <div class="image-item">
-<?php
+<?
               $encodedPath = str_replace('%2F', '/', rawurlencode($image['path']));
               $previewUrl = 'thumb.php?mode=preview&image=' . $encodedPath;
               $thumbUrl = 'thumb.php?image=' . $encodedPath;

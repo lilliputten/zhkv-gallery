@@ -39,19 +39,22 @@ function loadFolderConfig($folderPath, &$config, $configName = 'gallery')
   }
 }
 
-/**
- * Load and merge configuration from gallery.json and optional gallery.local.json
- * Also loads config from the image's parent folder if an image path is provided
- *
- * @param string $imagePath Optional path to an image file to load folder-specific config
- * @return string Merged configuration array
- */
-function currentUrl()
+function getCurrentUrlBase()
 {
   $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     ? 'https'
     : ((!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http');
-  return $protocol . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+  return $protocol . '://' . $_SERVER['HTTP_HOST'];
+}
+
+function getCurrentUrlPrefix()
+{
+  return getCurrentUrlBase() . rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
+}
+
+function getCurrentUrl()
+{
+  return getCurrentUrlBase() . $_SERVER['REQUEST_URI'];
 }
 
 function faviconTag()
