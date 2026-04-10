@@ -6,6 +6,7 @@ require_once __DIR__ . '/helpers.php';
 $imagePath = isset($_GET['image']) ? $_GET['image'] : '';
 
 $config = loadConfig($imagePath);
+$vTag = isset($config['vTag']) ? $config['vTag'] : $projectTag;
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
 
@@ -13,6 +14,8 @@ $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRe
 $thumbSize = isset($_GET['size']) ? (int) $_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
+
+$vTagPostfix = '?v=' . $vTag;
 
 // Image properties - try to load from .md file first
 $imageTitle = '';
@@ -128,7 +131,7 @@ $pageDescription = $description ? $description : basename($imagePath);
   <meta property="og:site_name" content="<?= prepareRichText($title) ?>" />
   <meta property="og:title" content="<?= prepareRichText($shortTitle) ?>" />
   <meta property="og:description" content="<?= prepareRichText($pageDescription) ?>" />
-  <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
+  <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl . $vTagPostfix) ?>" />
   <meta property="og:image:width" content="<?= $thumbSize ?>" />
   <meta property="og:image:height" content="<?= $thumbSize ?>" />
   <meta property="og:url" content="<?= htmlspecialchars($getCurrentUrl) ?>" />
@@ -136,26 +139,26 @@ $pageDescription = $description ? $description : basename($imagePath);
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="<?= prepareRichText($shortTitle) ?>" />
   <meta name="twitter:description" content="<?= prepareRichText($pageDescription) ?>" />
-  <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
+  <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl . $vTagPostfix) ?>" />
   <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
   <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
   <!-- Shared headers -->
 <? include('common-headers-post.php') ?>
   <!-- Resources -->
-  <link rel="preload" href="<?= $previewImageUrl ?>" as="image">
-  <link rel="stylesheet" href="view.css" />
+  <link rel="preload" href="<?= $previewImageUrl . $vTagPostfix ?>" as="image">
+  <link rel="stylesheet" href="view.css?v=<?= $projectTag ?>" />
   <style>
     .image {
 <? if ($maxWidth) { ?>
       max-width: <?= $maxWidth ?>px;
 <? } ?>
-      background-image: url("<?= $previewImageUrl ?>");
+      background-image: url("<?= $previewImageUrl . $vTagPostfix ?>");
     }
   </style>
 </head>
 
 <body>
-  <img class="image" src="<?= $encodedPath ?>" border="0" loading="lazy" />
+  <img class="image" src="<?= $encodedPath . $vTagPostfix ?>" border="0" loading="lazy" />
 
   <div class="float-panel left bottom">
 <? if ($prevViewUrl): ?>

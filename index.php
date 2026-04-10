@@ -3,6 +3,7 @@
 require_once __DIR__ . '/helpers.php';
 
 $config = loadConfig();
+$vTag = isset($config['vTag']) ? $config['vTag'] : $projectTag;
 $galleryTitle = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $galleryDescription = isset($config['galleryDescription']) ? $config['galleryDescription'] : 'Image gallery with thumbnails and viewer';
 $thumbSize = isset($config['thumbSize']) ? $config['thumbSize'] : 150;
@@ -12,6 +13,8 @@ $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRe
 // $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
 // $indexCacheValidMins = isset($config['indexCacheValidMins']) ? $config['indexCacheValidMins'] : 30;
 // $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
+
+$vTagPostfix = '?v=' . $vTag;
 
 // Get image list using the shared cache function
 $imageData = getImageList($config);
@@ -84,10 +87,10 @@ if (!empty($scanResults)) {
     $ogImageUrl = $baseUrl . $previewUrl;
     $thumbImageUrl = $baseUrl . $thumbUrl;
 ?>
-  <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
+  <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl . $vTagPostfix) ?>" />
   <meta property="og:image:width" content="<?= $thumbSize ?>" />
   <meta property="og:image:height" content="<?= $thumbSize ?>" />
-  <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl) ?>" />
+  <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl . $vTagPostfix) ?>" />
   <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
   <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
 <?
