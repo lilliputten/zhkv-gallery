@@ -15,7 +15,8 @@ $thumbSize = isset($_GET['size']) ? (int) $_GET['size'] : (isset($config['thumbS
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
 
-$vTagPostfix = '?v=' . $vTag;
+$vTagPostfix = ''; // isset($vTag) ? '?v=' . $vTag : '';
+$vTagPostfixPlus = ''; // isset($vTag) ? ($useRedirectMode ? '&v=' . $vTag : $vTagPostfix) : '';
 
 // Image properties - try to load from .md file first
 $imageTitle = '';
@@ -131,7 +132,7 @@ $pageDescription = $description ? $description : basename($imagePath);
   <meta property="og:site_name" content="<?= prepareRichText($title) ?>" />
   <meta property="og:title" content="<?= prepareRichText($shortTitle) ?>" />
   <meta property="og:description" content="<?= prepareRichText($pageDescription) ?>" />
-  <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl . $vTagPostfix) ?>" />
+  <meta property="og:image" content="<?= $thumbImageUrl . $vTagPostfixPlus ?>" />
   <meta property="og:image:width" content="<?= $thumbSize ?>" />
   <meta property="og:image:height" content="<?= $thumbSize ?>" />
   <meta property="og:url" content="<?= htmlspecialchars($getCurrentUrl) ?>" />
@@ -139,26 +140,33 @@ $pageDescription = $description ? $description : basename($imagePath);
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="<?= prepareRichText($shortTitle) ?>" />
   <meta name="twitter:description" content="<?= prepareRichText($pageDescription) ?>" />
-  <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl . $vTagPostfix) ?>" />
+  <meta name="twitter:image" content="<?= $thumbImageUrl . $vTagPostfixPlus ?>" />
   <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
   <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
   <!-- Shared headers -->
 <? include('common-headers-post.php') ?>
   <!-- Resources -->
-  <link rel="preload" href="<?= $previewImageUrl . $vTagPostfix ?>" as="image">
+  <link rel="preload" href="<?= $thumbImageUrl . $vTagPostfixPlus ?>" as="image">
+  <link rel="preload" href="<?= $previewImageUrl . $vTagPostfixPlus ?>" as="image">
   <link rel="stylesheet" href="view.css?v=<?= $projectTag ?>" />
   <style>
+    .image-wrapper,
     .image {
 <? if ($maxWidth) { ?>
       max-width: <?= $maxWidth ?>px;
 <? } ?>
-      background-image: url("<?= $previewImageUrl . $vTagPostfix ?>");
+      background-image: url("<?= $previewImageUrl . $vTagPostfixPlus ?>");
+    }
+    .image-wrapper {
+      background-image: url("<?= $thumbImageUrl . $vTagPostfixPlus ?>");
     }
   </style>
 </head>
 
 <body>
-  <img class="image" src="<?= $encodedPath . $vTagPostfix ?>" border="0" loading="lazy" />
+  <div class="image-wrapper">
+    <img class="image" src="<?= $encodedPath . $vTagPostfix ?>" border="0" loading="lazy" />
+  </div>
 
   <div class="float-panel left bottom">
 <? if ($prevViewUrl): ?>

@@ -14,7 +14,8 @@ $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRe
 // $indexCacheValidMins = isset($config['indexCacheValidMins']) ? $config['indexCacheValidMins'] : 30;
 // $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
 
-$vTagPostfix = '?v=' . $vTag;
+$vTagPostfix = ''; // isset($vTag) ? '?v=' . $vTag : '';
+$vTagPostfixPlus = ''; // isset($vTag) ? ($useRedirectMode ? '&v=' . $vTag : $vTagPostfix) : '';
 
 // Get image list using the shared cache function
 $imageData = getImageList($config);
@@ -87,10 +88,10 @@ if (!empty($scanResults)) {
     $ogImageUrl = $baseUrl . $previewUrl;
     $thumbImageUrl = $baseUrl . $thumbUrl;
 ?>
-  <meta property="og:image" content="<?= htmlspecialchars($thumbImageUrl . $vTagPostfix) ?>" />
+  <meta property="og:image" content="<?= $thumbImageUrl . $vTagPostfixPlus ?>" />
   <meta property="og:image:width" content="<?= $thumbSize ?>" />
   <meta property="og:image:height" content="<?= $thumbSize ?>" />
-  <meta name="twitter:image" content="<?= htmlspecialchars($thumbImageUrl . $vTagPostfix) ?>" />
+  <meta name="twitter:image" content="<?= $thumbImageUrl . $vTagPostfixPlus ?>" />
   <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
   <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
 <?
@@ -115,7 +116,7 @@ if (!empty($scanResults)) {
           <h2 class="section-title">
             <?= prepareRichText(!empty($folderData['title']) ? $folderData['title'] : $folderData['name']) ?>
 
-            <a class="anchor-link" href="#<?= $folderPath ?>"><i data-lucide="link"></i></a>
+            <a class="anchor-link" href="#<?= $folderPath ?>" title="Anchor link to the section"><i data-lucide="link"></i></a>
           </h2>
 <? if (!empty($folderData['description'])): ?>
           <p class="section-description"><?= prepareRichText($folderData['description']) ?></p>

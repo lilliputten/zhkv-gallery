@@ -6,7 +6,7 @@ $isDev = ($serverPort === 8000);
 
 $basePath = str_replace('\\', '/', __DIR__);
 
-$projectTag = 'v0.0.1';
+$projectTag = 'v0.0.1a';
 
 /**
  * Load configuration from a folder by merging gallery.json and gallery.local.json files
