@@ -83,7 +83,25 @@ if ($preview || $full) {
   $newHeight = $thumbSize;
 }
 
-$cacheFilename = $originalName . '-' . $currentHash . '-' . ($preview ? ($full ? 'full' : 'preview') : 'thumb') . '-' . $newWidth . 'x' . $newHeight . '.webp';
+// Determine output format and extension based on original image format
+$outputFormat = $fileExt;
+$outputMimeType = $mimeType;
+switch ($mimeType) {
+  case 'image/jpeg':
+    $outputFormat = 'jpg';
+    break;
+  case 'image/png':
+    $outputFormat = 'png';
+    break;
+  case 'image/gif':
+    $outputFormat = 'gif';
+    break;
+  case 'image/webp':
+    $outputFormat = 'webp';
+    break;
+}
+
+$cacheFilename = $originalName . '-' . $currentHash . '-' . ($preview ? ($full ? 'full' : 'preview') : 'thumb') . '-' . $newWidth . 'x' . $newHeight . '.' . $outputFormat;
 $cachePath = $thumbsPath . '/' . $cacheFilename;
 
 // Check if cached thumbnail exists (hash in filename guarantees freshness)
@@ -92,16 +110,16 @@ if (file_exists($cachePath)) {
   if ($resolvedCache === false || strpos($resolvedCache, realpath($thumbsPath)) !== 0) {
     dieWithError('Invalid cache path', 403);
   }
-  
+
   // Handle HEAD requests properly for OpenGraph crawlers
   if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
-    header('Content-Type: image/webp');
+    header('Content-Type: ' . $outputMimeType);
     header('Cache-Control: public, max-age=86400');
     header('Content-Length: ' . filesize($resolvedCache));
     exit;
   }
-  
-  header('Content-Type: image/webp');
+
+  header('Content-Type: ' . $outputMimeType);
   header('Cache-Control: public, max-age=86400');
   readfile($resolvedCache);
   exit;
@@ -178,20 +196,50 @@ if (extension_loaded('gd')) {
     $cropHeight // Source height
   );
 
-  // Save thumbnail to cache and output
-  imagewebp($thumbnail, $cachePath, 85);
-  
+  // Save thumbnail to cache and output based on original format
+  switch ($mimeType) {
+    case 'image/png':
+      imagepng($thumbnail, $cachePath, 6); // Compression level 0-9, 6 is a good balance
+      break;
+    case 'image/gif':
+      imagegif($thumbnail, $cachePath);
+      break;
+    case 'image/webp':
+      imagewebp($thumbnail, $cachePath, 85); // Quality 0-100
+      break;
+    case 'image/jpeg':
+    default:
+      imagejpeg($thumbnail, $cachePath, 85); // Quality 0-100
+      break;
+  }
+
   // Handle HEAD requests properly for OpenGraph crawlers
   if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
-    header('Content-Type: image/webp');
+    header('Content-Type: ' . $outputMimeType);
     header('Cache-Control: public, max-age=86400');
     header('Content-Length: ' . filesize($cachePath));
     exit;
   }
-  
-  header('Content-Type: image/webp');
+
+  header('Content-Type: ' . $outputMimeType);
   header('Cache-Control: public, max-age=86400');
-  imagewebp($thumbnail, null, 85);
+  
+  // Output based on format
+  switch ($mimeType) {
+    case 'image/png':
+      imagepng($thumbnail, null, 6);
+      break;
+    case 'image/gif':
+      imagegif($thumbnail);
+      break;
+    case 'image/webp':
+      imagewebp($thumbnail, null, 85);
+      break;
+    case 'image/jpeg':
+    default:
+      imagejpeg($thumbnail, null, 85);
+      break;
+  }
 }
 // Try ImageMagick as fallback
 elseif (class_exists('Imagick')) {
@@ -207,14 +255,30 @@ elseif (class_exists('Imagick')) {
       $imagick->cropThumbnailImage($thumbSize, $thumbSize);
     }
     $imagick->setImagePage($thumbSize, $thumbSize, 0, 0);
-    $imagick->setImageFormat('webp');
+    
+    // Set output format based on original image
+    switch ($mimeType) {
+      case 'image/png':
+        $imagick->setImageFormat('png');
+        break;
+      case 'image/gif':
+        $imagick->setImageFormat('gif');
+        break;
+      case 'image/webp':
+        $imagick->setImageFormat('webp');
+        break;
+      case 'image/jpeg':
+      default:
+        $imagick->setImageFormat('jpeg');
+        break;
+    }
 
     // Save to cache
     $imagick->writeImage($cachePath);
 
     // Handle HEAD requests properly for OpenGraph crawlers
     if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
-      header('Content-Type: image/webp');
+      header('Content-Type: ' . $outputMimeType);
       header('Cache-Control: public, max-age=86400');
       header('Content-Length: ' . filesize($cachePath));
       $imagick->destroy();
@@ -222,7 +286,7 @@ elseif (class_exists('Imagick')) {
     }
 
     // Output the thumbnail
-    header('Content-Type: image/webp');
+    header('Content-Type: ' . $outputMimeType);
     header('Cache-Control: public, max-age=86400');
     echo $imagick->getImageBlob();
     $imagick->destroy();

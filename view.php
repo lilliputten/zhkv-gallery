@@ -129,7 +129,7 @@ $pageDescription = $description ? $description : basename($imagePath);
   <title><?= htmlspecialchars($shortTitle) ?></title>
   <!-- OpenGraph Meta Tags -->
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="<?= prepareRichText($title) ?>" />
+  <meta property="og:site_name" content="<?= prepareRichText($shortTitle) ?>" />
   <meta property="og:title" content="<?= prepareRichText($shortTitle) ?>" />
   <meta property="og:description" content="<?= prepareRichText($pageDescription) ?>" />
   <meta property="og:image" content="<?= $thumbImageUrl . $vTagPostfixPlus ?>" />

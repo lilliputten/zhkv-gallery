@@ -1,8 +1,8 @@
 {
   "title": "Design Gallery",
   "useRedirectMode": true,
-  "thumbSize": 300,
-  "previewSize": 300,
+  "thumbSize": 200,
+  "previewSize": 200,
   "maxHeightRatio": 4,
   "thumbsDir": ".cache.thumbs",
   "indexCache": ".cache.index"
