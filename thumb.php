@@ -92,6 +92,15 @@ if (file_exists($cachePath)) {
   if ($resolvedCache === false || strpos($resolvedCache, realpath($thumbsPath)) !== 0) {
     dieWithError('Invalid cache path', 403);
   }
+  
+  // Handle HEAD requests properly for OpenGraph crawlers
+  if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
+    header('Content-Type: image/webp');
+    header('Cache-Control: public, max-age=86400');
+    header('Content-Length: ' . filesize($resolvedCache));
+    exit;
+  }
+  
   header('Content-Type: image/webp');
   header('Cache-Control: public, max-age=86400');
   readfile($resolvedCache);
@@ -171,6 +180,15 @@ if (extension_loaded('gd')) {
 
   // Save thumbnail to cache and output
   imagewebp($thumbnail, $cachePath, 85);
+  
+  // Handle HEAD requests properly for OpenGraph crawlers
+  if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
+    header('Content-Type: image/webp');
+    header('Cache-Control: public, max-age=86400');
+    header('Content-Length: ' . filesize($cachePath));
+    exit;
+  }
+  
   header('Content-Type: image/webp');
   header('Cache-Control: public, max-age=86400');
   imagewebp($thumbnail, null, 85);
@@ -193,6 +211,15 @@ elseif (class_exists('Imagick')) {
 
     // Save to cache
     $imagick->writeImage($cachePath);
+
+    // Handle HEAD requests properly for OpenGraph crawlers
+    if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
+      header('Content-Type: image/webp');
+      header('Cache-Control: public, max-age=86400');
+      header('Content-Length: ' . filesize($cachePath));
+      $imagick->destroy();
+      exit;
+    }
 
     // Output the thumbnail
     header('Content-Type: image/webp');

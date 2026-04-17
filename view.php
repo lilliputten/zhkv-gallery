@@ -141,8 +141,8 @@ $pageDescription = $description ? $description : basename($imagePath);
   <meta name="twitter:title" content="<?= prepareRichText($shortTitle) ?>" />
   <meta name="twitter:description" content="<?= prepareRichText($pageDescription) ?>" />
   <meta name="twitter:image" content="<?= $thumbImageUrl . $vTagPostfixPlus ?>" />
-  <meta property="twitter:image:width" content="<?= $thumbSize ?>" />
-  <meta property="twitter:image:height" content="<?= $thumbSize ?>" />
+  <meta name="twitter:image:width" content="<?= $thumbSize ?>" />
+  <meta name="twitter:image:height" content="<?= $thumbSize ?>" />
   <!-- Shared headers -->
 <? include('common-headers-post.php') ?>
   <!-- Resources -->
