@@ -1,0 +1,12 @@
+{
+    "title": "My Image Gallery",
+    "galleryDescription": "A beautiful collection of images organized by categories",
+    "thumbSize": 200,
+    "previewSize": 400,
+    "maxHeightRatio": 2,
+    "maxWidth": 1920,
+    "useRedirectMode": true,
+    "thumbsDir": ".cache.thumbs",
+    "indexCache": ".cache.index",
+    "indexCacheValidHours": 30
+}

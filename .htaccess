@@ -1,6 +1,12 @@
 # Enable Rewrite Engine
 RewriteEngine On
 
+# Disable access to hidden files (files starting with .)
+RewriteRule "(^|/)\." - [F,L]
+
+# PHP Error Log Configuration
+php_value error_log ".php.log"
+
 # Enable extensionless PHP URLs
 # Allow accessing /info instead of /info.php
 RewriteCond %{REQUEST_FILENAME} !-d
