@@ -1,31 +1,34 @@
 {
   "name": "php-image-gallery",
-  "version": "1.0.1",
-  "description": "A lightweight PHP-based image gallery system with automatic directory scanning and thumbnail generation",
+  "version": "1.0.2",
+  "description": "A lightweight PHP-based image gallery system with automatic directory scanning, smart caching, and optimized thumbnail generation featuring base64 LQIP embedding and configurable URL strategies",
   "main": "index.php",
   "type": "module",
   "author": "lilliputten",
   "license": "MIT",
   "repository": {
-  "type": "git",
-  "url": "https://github.com/lilliputten/zhkv-gallery"
+    "type": "git",
+    "url": "https://github.com/lilliputten/zhkv-gallery"
   },
   "homepage": "https://github.com/lilliputten/zhkv-gallery#readme",
   "engines": {
-  "php": ">=7.0"
+    "php": ">=7.0"
   },
   "keywords": [
-  "php",
-  "gallery",
-  "image",
-  "thumbnail",
-  "lightweight",
-  "directory-scanner"
+    "php",
+    "gallery",
+    "image",
+    "thumbnail",
+    "lightweight",
+    "directory-scanner",
+    "lqip",
+    "performance-optimized",
+    "smart-caching"
   ],
   "dependencies": {},
   "devDependencies": {},
   "scripts": {
-  "serve": "php -S localhost:8000",
-  "dev": "php -S localhost:8000"
+    "serve": "php -S localhost:8000",
+    "dev": "php -S localhost:8000"
   }
 }

@@ -502,4 +502,4 @@ Created for demo site image gallery functionality.
 
 ## Version
 
-1.0.1 (2026-04-08)
+1.0.2 (2026-04-21)
