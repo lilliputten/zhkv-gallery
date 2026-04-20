@@ -6,7 +6,7 @@
     "maxHeightRatio": 2,
     "maxWidth": 1920,
     "useRedirectMode": true,
-    "thumbsDir": ".cache.thumbs",
-    "indexCache": ".cache.index",
+    "thumbsDir": "thumbs",
+    "indexCache": ".cache.index.json",
     "indexCacheValidHours": 30
 }

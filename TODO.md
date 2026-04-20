@@ -1,5 +1,5 @@
-- Return to the "current" folder's anchor link.
-- `thumb.php` to check/create thumb cache and return redirect to it.
+`thumb.php` should to check/create thumb cache and return a redirect to it.
+
 - `view.php` to allow slighly overscale, over the original image width.
 - Use LQIP thumbnails in pages. See `D:\Work\Me\11ty-site\lilliputten-11ty-site\src\articles\2025\gulp-lqip-plugin\gulp-lqip-plugin.md`.
 

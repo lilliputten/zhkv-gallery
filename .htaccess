@@ -1,6 +1,9 @@
 # Enable Rewrite Engine
 RewriteEngine On
 
+# # Exception: Allow access to .cache.thumbs directory for serving cached thumbnails
+# RewriteCond %{REQUEST_URI} !^/\.cache\.thumbs/
+
 # Disable access to hidden files (files starting with .)
 RewriteRule "(^|/)\." - [F,L]
 

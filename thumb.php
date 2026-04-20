@@ -105,197 +105,160 @@ $cacheFilename = $originalName . '-' . $currentHash . '-' . ($preview ? ($full ?
 $cachePath = $thumbsPath . '/' . $cacheFilename;
 
 // Check if cached thumbnail exists (hash in filename guarantees freshness)
-if (file_exists($cachePath)) {
-  $resolvedCache = realpath($cachePath);
-  if ($resolvedCache === false || strpos($resolvedCache, realpath($thumbsPath)) !== 0) {
-    dieWithError('Invalid cache path', 403);
-  }
+if (!file_exists($cachePath)) {
+  // Cache doesn't exist, generate it
 
-  // Handle HEAD requests properly for OpenGraph crawlers
-  if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
-    header('Content-Type: ' . $outputMimeType);
-    header('Cache-Control: public, max-age=86400');
-    header('Content-Length: ' . filesize($resolvedCache));
-    exit;
-  }
-
-  header('Content-Type: ' . $outputMimeType);
-  header('Cache-Control: public, max-age=86400');
-  readfile($resolvedCache);
-  exit;
-}
-
-// Try GD library first
-if (extension_loaded('gd')) {
-  // Create image resource based on type
-  switch ($mimeType) {
-    case 'image/jpeg':
-      $sourceImage = @imagecreatefromjpeg($fullPath);
-      break;
-    case 'image/png':
-      $sourceImage = @imagecreatefrompng($fullPath);
-      break;
-    case 'image/gif':
-      $sourceImage = @imagecreatefromgif($fullPath);
-      break;
-    case 'image/webp':
-      $sourceImage = @imagecreatefromwebp($fullPath);
-      break;
-    default:
-      dieWithError('Unsupported image format: ' . $mimeType, 415);
-  }
-
-  if (!$sourceImage) {
-    dieWithError('Failed to create image resource from: ' . $imagePath . ' (format: ' . $mimeType . ')', 500);
-  }
-
-  // Create square thumbnail image
-  $thumbnail = imagecreatetruecolor($newWidth, $newHeight);
-
-  // Preserve transparency for PNG and GIF
-  if ($mimeType === 'image/png' || $mimeType === 'image/gif') {
-    imagealphablending($thumbnail, false);
-    imagesavealpha($thumbnail, true);
-    $transparent = imagecolorallocatealpha($thumbnail, 255, 255, 255, 127);
-    imagefill($thumbnail, 0, 0, $transparent);
-  }
-
-  if ($preview || $full) {
-    $cropX = 0;
-    $cropY = 0;
-    $cropWidth = $originalWidth;
-    $cropHeight = min($originalHeight, (int) floor($newHeight / $scale));
-  } else {
-    // Square crop for thumb mode
-    if ($srcRatio > 1) {
-      // Wider than tall: crop sides
-      $cropHeight = $originalHeight;
-      $cropWidth = $originalHeight;
-      $cropX = (int) floor(($originalWidth - $cropWidth) / 2);
-      $cropY = 0;
-    } else {
-      // Taller than wide: crop bottom
-      $cropWidth = $originalWidth;
-      $cropHeight = $originalWidth;
-      $cropX = 0;
-      $cropY = 0;
-    }
-  }
-
-  // Resize the image
-  imagecopyresampled(
-    $thumbnail,
-    $sourceImage,
-    0,
-    0, // destination point
-    $cropX,
-    $cropY, // source point
-    $newWidth, // Destination width
-    $newHeight, // Destination height
-    $cropWidth, // Source width
-    $cropHeight // Source height
-  );
-
-  // Save thumbnail to cache and output based on original format
-  switch ($mimeType) {
-    case 'image/png':
-      imagepng($thumbnail, $cachePath, 6); // Compression level 0-9, 6 is a good balance
-      break;
-    case 'image/gif':
-      imagegif($thumbnail, $cachePath);
-      break;
-    case 'image/webp':
-      imagewebp($thumbnail, $cachePath, 85); // Quality 0-100
-      break;
-    case 'image/jpeg':
-    default:
-      imagejpeg($thumbnail, $cachePath, 85); // Quality 0-100
-      break;
-  }
-
-  // Handle HEAD requests properly for OpenGraph crawlers
-  if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
-    header('Content-Type: ' . $outputMimeType);
-    header('Cache-Control: public, max-age=86400');
-    header('Content-Length: ' . filesize($cachePath));
-    exit;
-  }
-
-  header('Content-Type: ' . $outputMimeType);
-  header('Cache-Control: public, max-age=86400');
-  
-  // Output based on format
-  switch ($mimeType) {
-    case 'image/png':
-      imagepng($thumbnail, null, 6);
-      break;
-    case 'image/gif':
-      imagegif($thumbnail);
-      break;
-    case 'image/webp':
-      imagewebp($thumbnail, null, 85);
-      break;
-    case 'image/jpeg':
-    default:
-      imagejpeg($thumbnail, null, 85);
-      break;
-  }
-}
-// Try ImageMagick as fallback
-elseif (class_exists('Imagick')) {
-  try {
-    $imagick = new Imagick($fullPath);
-
-    // Scale or crop based on mode
-    if ($preview || $full) {
-      // Scale proportionally without cropping
-      $imagick->thumbnailImage($newWidth, $newHeight, true);
-    } else {
-      // Crop to square from center
-      $imagick->cropThumbnailImage($thumbSize, $thumbSize);
-    }
-    $imagick->setImagePage($thumbSize, $thumbSize, 0, 0);
-    
-    // Set output format based on original image
+  // Try GD library first
+  if (extension_loaded('gd')) {
+    // Create image resource based on type
     switch ($mimeType) {
+      case 'image/jpeg':
+        $sourceImage = @imagecreatefromjpeg($fullPath);
+        break;
       case 'image/png':
-        $imagick->setImageFormat('png');
+        $sourceImage = @imagecreatefrompng($fullPath);
         break;
       case 'image/gif':
-        $imagick->setImageFormat('gif');
+        $sourceImage = @imagecreatefromgif($fullPath);
         break;
       case 'image/webp':
-        $imagick->setImageFormat('webp');
+        $sourceImage = @imagecreatefromwebp($fullPath);
+        break;
+      default:
+        dieWithError('Unsupported image format: ' . $mimeType, 415);
+    }
+
+    if (!$sourceImage) {
+      dieWithError('Failed to create image resource from: ' . $imagePath . ' (format: ' . $mimeType . ')', 500);
+    }
+
+    // Create square thumbnail image
+    $thumbnail = imagecreatetruecolor($newWidth, $newHeight);
+
+    // Preserve transparency for PNG and GIF
+    if ($mimeType === 'image/png' || $mimeType === 'image/gif') {
+      imagealphablending($thumbnail, false);
+      imagesavealpha($thumbnail, true);
+      $transparent = imagecolorallocatealpha($thumbnail, 255, 255, 255, 127);
+      imagefill($thumbnail, 0, 0, $transparent);
+    }
+
+    if ($preview || $full) {
+      $cropX = 0;
+      $cropY = 0;
+      $cropWidth = $originalWidth;
+      $cropHeight = min($originalHeight, (int) floor($newHeight / $scale));
+    } else {
+      // Square crop for thumb mode
+      if ($srcRatio > 1) {
+        // Wider than tall: crop sides
+        $cropHeight = $originalHeight;
+        $cropWidth = $originalHeight;
+        $cropX = (int) floor(($originalWidth - $cropWidth) / 2);
+        $cropY = 0;
+      } else {
+        // Taller than wide: crop bottom
+        $cropWidth = $originalWidth;
+        $cropHeight = $originalWidth;
+        $cropX = 0;
+        $cropY = 0;
+      }
+    }
+
+    // Resize the image
+    imagecopyresampled(
+      $thumbnail,
+      $sourceImage,
+      0,
+      0, // destination point
+      $cropX,
+      $cropY, // source point
+      $newWidth, // Destination width
+      $newHeight, // Destination height
+      $cropWidth, // Source width
+      $cropHeight // Source height
+    );
+
+    // Save thumbnail to cache based on original format
+    switch ($mimeType) {
+      case 'image/png':
+        imagepng($thumbnail, $cachePath, 6); // Compression level 0-9, 6 is a good balance
+        break;
+      case 'image/gif':
+        imagegif($thumbnail, $cachePath);
+        break;
+      case 'image/webp':
+        imagewebp($thumbnail, $cachePath, 85); // Quality 0-100
         break;
       case 'image/jpeg':
       default:
-        $imagick->setImageFormat('jpeg');
+        imagejpeg($thumbnail, $cachePath, 85); // Quality 0-100
         break;
     }
 
-    // Save to cache
-    $imagick->writeImage($cachePath);
+    imagedestroy($sourceImage);
+    imagedestroy($thumbnail);
+  }
+  // Try ImageMagick as fallback
+  elseif (class_exists('Imagick')) {
+    try {
+      $imagick = new Imagick($fullPath);
 
-    // Handle HEAD requests properly for OpenGraph crawlers
-    if ($_SERVER['REQUEST_METHOD'] === 'HEAD') {
-      header('Content-Type: ' . $outputMimeType);
-      header('Cache-Control: public, max-age=86400');
-      header('Content-Length: ' . filesize($cachePath));
+      // Scale or crop based on mode
+      if ($preview || $full) {
+        // Scale proportionally without cropping
+        $imagick->thumbnailImage($newWidth, $newHeight, true);
+      } else {
+        // Crop to square from center
+        $imagick->cropThumbnailImage($thumbSize, $thumbSize);
+      }
+      $imagick->setImagePage($thumbSize, $thumbSize, 0, 0);
+
+      // Set output format based on original image
+      switch ($mimeType) {
+        case 'image/png':
+          $imagick->setImageFormat('png');
+          break;
+        case 'image/gif':
+          $imagick->setImageFormat('gif');
+          break;
+        case 'image/webp':
+          $imagick->setImageFormat('webp');
+          break;
+        case 'image/jpeg':
+        default:
+          $imagick->setImageFormat('jpeg');
+          break;
+      }
+
+      // Save to cache
+      $imagick->writeImage($cachePath);
       $imagick->destroy();
-      exit;
+    } catch (Exception $e) {
+      dieWithError('ImageMagick error: ' . $e->getMessage(), 500);
     }
+  }
+  // No image library available
+  else {
+    dieWithError('No image processing library available. Enable GD or ImageMagick in php.ini.', 500);
+  }
 
-    // Output the thumbnail
-    header('Content-Type: ' . $outputMimeType);
-    header('Cache-Control: public, max-age=86400');
-    echo $imagick->getImageBlob();
-    $imagick->destroy();
-  } catch (Exception $e) {
-    dieWithError('ImageMagick error: ' . $e->getMessage(), 500);
+  // Verify cache was created successfully
+  if (!file_exists($cachePath)) {
+    dieWithError('Failed to generate thumbnail cache', 500);
   }
 }
 
-// No image library available
-else {
-  dieWithError('No image processing library available. Enable GD or ImageMagick in php.ini.', 500);
+// Cache exists (either already existed or just created), redirect to it
+$resolvedCache = realpath($cachePath);
+if ($resolvedCache === false || strpos($resolvedCache, realpath($thumbsPath)) !== 0) {
+  dieWithError('Invalid cache path', 403);
 }
+
+// Build the public URL to the cache file
+$cacheUrl = $thumbsDir . '/' . $cacheFilename;
+
+// Redirect to the cached thumbnail
+header('Location: ' . $cacheUrl, true, 302);
+header('Cache-Control: no-cache, must-revalidate');
+exit;
