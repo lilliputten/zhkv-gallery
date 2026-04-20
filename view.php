@@ -148,7 +148,7 @@ if ($useThumbRedirects) {
   // Old approach: Use thumb.php endpoint (dynamic processing)
   $previewUrl = 'thumb.php?mode=' . $previewMode . '&image=' . $encodedPath;
   $thumbUrl = 'thumb.php?image=' . $encodedPath;
-  
+
   if ($useRedirectMode) {
     $previewUrl = $previewMode . '/' . $encodedPath;
     $thumbUrl = 'thumb/' . $encodedPath;
@@ -158,7 +158,7 @@ if ($useThumbRedirects) {
   try {
     $previewThumbInfo = generateThumbnail($imagePath, $previewMode, $previewSize, $config);
     $previewUrl = $thumbsDir . '/' . $previewThumbInfo['filename'];
-    
+
     $thumbInfo = generateThumbnail($imagePath, 'thumb', $thumbSize, $config);
     $thumbUrl = $thumbsDir . '/' . $thumbInfo['filename'];
   } catch (Exception $e) {

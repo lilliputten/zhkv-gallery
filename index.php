@@ -174,6 +174,22 @@ if (!empty($scanResults)) {
 <? include('common-headers-post.php') ?>
   <link rel="stylesheet" href="<?= $baseUrl ?>styles.css?v=<?= $vTag ?>" />
   <link rel="stylesheet" href="<?= $baseUrl ?>index.css" />
+  <style>
+    .image-grid {
+      grid-template-columns: repeat(auto-fill, minmax(<?= $thumbSize ?>px, 1fr));
+    }
+    /* Adaptive sizes */
+    @media (max-width: <?= $thumbSize * 2 + 200 ?>px) {
+      .image-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: <?= $thumbSize * 1 + 100 ?>px) {
+      .image-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -221,22 +237,21 @@ if (!empty($scanResults)) {
           <p class="section-description"><?= prepareRichText($folderData['description']) ?></p>
 <? endif; ?>
         </div>
-        <div class="image-grid"
-          style="grid-template-columns: repeat(auto-fill, minmax(<?= htmlspecialchars($thumbSize) ?>px, 1fr))">
+        <div class="image-grid">
 <? foreach ($folderData['images'] as $image): ?>
             <div class="image-item">
 <?
               $encodedPath = str_replace('%2F', '/', rawurlencode($image['path']));
               $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs';
-              
+
               // Determine which approach to use for thumbnail URLs
               $useThumbRedirects = isset($config['useThumbRedirects']) ? $config['useThumbRedirects'] : false;
-              
+
               if ($useThumbRedirects) {
                 // Old approach: Use thumb.php endpoint (dynamic processing)
                 $previewUrl = $baseUrl . 'thumb.php?mode=preview&image=' . $encodedPath;
                 $thumbUrl = $baseUrl . 'thumb.php?image=' . $encodedPath;
-                
+
                 if ($useRedirectMode) {
                   $previewUrl = $baseUrl . 'preview/' . $encodedPath;
                   $thumbUrl = $baseUrl . 'thumb/' . $encodedPath;
@@ -246,7 +261,7 @@ if (!empty($scanResults)) {
                 try {
                   $previewThumbInfo = generateThumbnail($image['path'], 'preview', $previewSize, $config);
                   $previewUrl = $baseUrl . $thumbsDir . '/' . $previewThumbInfo['filename'];
-                  
+
                   $thumbInfo = generateThumbnail($image['path'], 'thumb', $thumbSize, $config);
                   $thumbUrl = $baseUrl . $thumbsDir . '/' . $thumbInfo['filename'];
                 } catch (Exception $e) {
@@ -255,7 +270,7 @@ if (!empty($scanResults)) {
                   $thumbUrl = $baseUrl . 'thumb.php?image=' . $encodedPath;
                 }
               }
-              
+
               $viewUrl = $baseUrl . 'view.php?image=' . $encodedPath;
               if ($useRedirectMode) {
                 $viewUrl = $baseUrl . 'view/' . $encodedPath;
