@@ -5,6 +5,7 @@ RewriteEngine On
 RewriteRule "(^|/)\." - [F,L]
 
 # PHP Error Log Configuration
+php_flag log_errors on
 php_value error_log ".php.log"
 
 # Enable extensionless PHP URLs
@@ -12,6 +13,9 @@ php_value error_log ".php.log"
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}\.php -f
 RewriteRule ^([^/]+)/?$ $1.php [L]
+
+# Redirect /list/{folder} to index.php?list={folder}
+RewriteRule ^list/(.+)$ index.php?list=$1 [QSA,NE,L]
 
 # Redirect view/{image} to view.php?image={image}
 RewriteRule ^view/(.+)$ view.php?image=$1 [QSA,NE,L]

@@ -74,6 +74,22 @@ if (!$maxWidth) {
 $imageData = getImageList($config, $imagePath);
 $navInfo = $imageData['navInfo'];
 
+// Calculate parent folder for "up" navigation
+$parentFolder = dirname($imagePath);
+if ($parentFolder === '.' || $parentFolder === '') {
+  $parentFolder = null;
+}
+
+// Generate list URL for parent folder if it exists
+$listUrl = '';
+if ($parentFolder) {
+  $encodedParentFolder = str_replace('%2F', '/', rawurlencode($parentFolder));
+  $listUrl = 'index.php?list=' . $encodedParentFolder;
+  if ($useRedirectMode) {
+    $listUrl = 'list/' . $encodedParentFolder;
+  }
+}
+
 // Check if we have any metadata to display
 $hasMetadata = !empty($imageTitle) || !empty($description);
 
@@ -173,6 +189,9 @@ $pageDescription = $description ? $description : basename($imagePath);
       <a href="<?= $prevViewUrl ?>" class="nav-button" title="Previous image"><i data-lucide="arrow-left"></i></a>
 <? endif ?>
     <a href="<?= $baseUrl ?>" class="nav-button" title="Back to the gallery"><i data-lucide="home"></i></a>
+<? if ($listUrl): ?>
+    <a href="<?= $listUrl ?>" class="nav-button" title="Back to folder list"><i data-lucide="folder-up"></i></a>
+<? endif ?>
 <? if ($nextViewUrl): ?>
       <a href="<?= $nextViewUrl ?>" class="nav-button" title="Next image"><i data-lucide="arrow-right"></i></a>
 <? endif ?>

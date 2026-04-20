@@ -17,9 +17,27 @@ $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRe
 $vTagPostfix = ''; // isset($vTag) ? '?v=' . $vTag : '';
 $vTagPostfixPlus = ''; // isset($vTag) ? ($useRedirectMode ? '&v=' . $vTag : $vTagPostfix) : '';
 
+// Get list parameter if provided
+$listParam = isset($_GET['list']) ? $_GET['list'] : null;
+
 // Get image list using the shared cache function
 $imageData = getImageList($config);
 $scanResults = $imageData['foldered'];
+
+// Filter by list parameter if provided
+if ($listParam !== null) {
+  // Decode URL encoding
+  $listParam = urldecode($listParam);
+
+  // Check if the list parameter matches a folder path
+  if (isset($scanResults[$listParam])) {
+    // Filter to show only this folder
+    $scanResults = [$listParam => $scanResults[$listParam]];
+  } else {
+    // If no match, show empty results
+    $scanResults = [];
+  }
+}
 
 $mdMetadata = loadImageMetadataFromMarkdown('gallery');
 if (!empty($mdMetadata['title'])) {
@@ -114,7 +132,24 @@ if (!empty($scanResults)) {
       <div class="section">
         <div class="section-header">
           <h2 class="section-title">
+<?
+            // Generate list URL based on useRedirectMode
+            $encodedFolderPath = str_replace('%2F', '/', rawurlencode($folderPath));
+            $listUrl = 'index.php?list=' . $encodedFolderPath;
+            if ($useRedirectMode) {
+              $listUrl = 'list/' . $encodedFolderPath;
+            }
+
+            // Check if we're currently viewing this folder
+            $isCurrentList = ($listParam === $folderPath);
+?>
+<? if (!$isCurrentList): ?>
+            <a href="<?= $listUrl ?>" class="section-link">
+<? endif; ?>
             <?= prepareRichText(!empty($folderData['title']) ? $folderData['title'] : $folderData['name']) ?>
+<? if (!$isCurrentList): ?>
+            </a>
+<? endif; ?>
 
             <a class="anchor-link" href="#<?= $folderPath ?>" title="Anchor link to the section"><i data-lucide="link"></i></a>
           </h2>

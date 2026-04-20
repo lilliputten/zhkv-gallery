@@ -5,5 +5,5 @@
   "previewSize": 200,
   "maxHeightRatio": 4,
   "thumbsDir": "thumbs",
-  "indexCache": ".cache.index"
+  "indexCache": ".cache.json"
 }
