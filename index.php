@@ -44,13 +44,19 @@ if ($listParam !== null) {
   }
 }
 
-$mdMetadata = loadImageMetadataFromMarkdown('gallery');
-if (!empty($mdMetadata['title'])) {
-  $galleryTitle = $mdMetadata['title'];
+// Get gallery metadata from cache (loaded during cache build)
+$imageData = getImageList($config);
+$rootMetadata = isset($imageData['root']) ? $imageData['root'] : ['title' => '', 'description' => ''];
+
+if (!empty($rootMetadata['title'])) {
+  $galleryTitle = $rootMetadata['title'];
 }
-if (!empty($mdMetadata['description'])) {
-  $galleryDescription = $mdMetadata['description'];
+if (!empty($rootMetadata['description'])) {
+  $galleryDescription = $rootMetadata['description'];
 }
+
+// Use foldered data for display
+$scanResults = $imageData['foldered'];
 
 // Calculate folder navigation (prev/next/home)
 $folderNav = [

@@ -292,15 +292,51 @@ function getImageList($config, $currentImagePath = null)
       return strcasecmp($a['name'], $b['name']);
     });
 
+    // Load root gallery metadata from gallery.md if exists
+    $rootMetadata = loadImageMetadataFromMarkdown('gallery');
+
+    // Build final cache structure with root metadata
+    $cacheData = [
+      'root' => [
+        'title' => $rootMetadata['title'],
+        'description' => $rootMetadata['description']
+      ],
+      'folders' => $scanResults
+    ];
+
     // Save to cache
     if ($cacheFile) {
-      file_put_contents($cacheFile, json_encode($scanResults, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+      file_put_contents($cacheFile, json_encode($cacheData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    // Set rootMetadata for newly generated cache
+    $rootMetadata = $cacheData['root'];
+    $folders = $cacheData['folders'];
+  }
+
+  // If cache was loaded (not generated), extract folders from the structure
+  if (file_exists($cacheFile) && !$cacheExpired) {
+    // Cache was loaded, extract folders from the new structure or use old structure for backward compatibility
+    if (isset($scanResults['root']) && isset($scanResults['folders'])) {
+      // New structure with root metadata
+      $rootMetadata = $scanResults['root'];
+      $folders = $scanResults['folders'];
+    } else {
+      // Old structure without root metadata (backward compatibility)
+      $folders = $scanResults;
+      $rootMetadata = [
+        'title' => '',
+        'description' => ''
+      ];
     }
   }
 
+  // Use folders for further processing
+  $folderedData = $folders;
+
   // Flatten the array to get a simple list of images for navigation
   $flatImageList = [];
-  foreach ($scanResults as $folder => $folderData) {
+  foreach ($folderedData as $folder => $folderData) {
     foreach ($folderData['images'] as $image) {
       $flatImageList[] = $image['path'];
     }
@@ -332,9 +368,10 @@ function getImageList($config, $currentImagePath = null)
   }
 
   return [
-    'foldered' => $scanResults,   // Original foldered structure for index.php
-    'flat' => $flatImageList,      // Flat list for navigation
-    'navInfo' => $navInfo          // Navigation information if current image specified
+    'root' => $rootMetadata,         // Root gallery metadata (title, description)
+    'foldered' => $folderedData,     // Original foldered structure for index.php
+    'flat' => $flatImageList,        // Flat list for navigation
+    'navInfo' => $navInfo            // Navigation information if current image specified
   ];
 }
 
