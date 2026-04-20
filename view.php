@@ -2,6 +2,8 @@
 // Load helpers
 require_once __DIR__ . '/helpers.php';
 
+$baseUrl = getCurrentUrlPrefix();
+
 // Get the image path from the URL parameter
 $imagePath = isset($_GET['image']) ? $_GET['image'] : '';
 
@@ -124,8 +126,6 @@ if ($useRedirectMode) {
   $thumbUrl = 'thumb/' . $encodedPath;
   $viewUrl = 'view/' . $encodedPath;
 }
-$baseUrl = getCurrentUrlPrefix();
-
 // Build URLs without escaping issues
 $ogImageUrl = $baseUrl . $previewUrl;
 $thumbImageUrl = $baseUrl . $thumbUrl;
@@ -164,7 +164,7 @@ $pageDescription = $description ? $description : basename($imagePath);
   <!-- Resources -->
   <link rel="preload" href="<?= $thumbImageUrl . $vTagPostfixPlus ?>" as="image">
   <link rel="preload" href="<?= $previewImageUrl . $vTagPostfixPlus ?>" as="image">
-  <link rel="stylesheet" href="view.css?v=<?= $projectTag ?>" />
+  <link rel="stylesheet" href="<?= $baseUrl ?>view.css?v=<?= $projectTag ?>" />
   <style>
     .image-wrapper,
     .image {

@@ -2,6 +2,11 @@
 // Load helpers
 require_once __DIR__ . '/helpers.php';
 
+// Urls
+// $urlPath = getCurrentUrlPath();
+$baseUrl = getCurrentUrlPrefix();
+$currentUrl = getCurrentUrl();
+
 $config = loadConfig();
 $vTag = isset($config['vTag']) ? $config['vTag'] : $projectTag;
 $galleryTitle = isset($config['title']) ? $config['title'] : 'Image Gallery';
@@ -94,11 +99,6 @@ if (!empty($listParam) && !empty($scanResults)) {
   }
 }
 
-// Urls
-// $urlPath = getCurrentUrlPath();
-$baseUrl = getCurrentUrlPrefix();
-$currentUrl = getCurrentUrl();
-
 // Try to find thumbnail image...
 $firstImagePath = null;
 $firstImageInfo = null;
@@ -165,8 +165,8 @@ if (!empty($scanResults)) {
 ?>
   <!-- Shared headers -->
 <? include('common-headers-post.php') ?>
-  <link rel="stylesheet" href="styles.css?v=<?= $vTag ?>" />
-  <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="<?= $baseUrl ?>styles.css?v=<?= $vTag ?>" />
+  <link rel="stylesheet" href="<?= $baseUrl ?>index.css" />
 </head>
 
 <body>

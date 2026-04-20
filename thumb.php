@@ -3,6 +3,9 @@
 // Load helpers
 require_once __DIR__ . '/helpers.php';
 
+// Build FQDN URL to the cached file
+$baseUrl = getCurrentUrlPrefix();
+
 // Get the image path from the URL parameter
 $imagePath = isset($_GET['image']) ? $_GET['image'] : '';
 $mode = isset($_GET['mode']) ? $_GET['mode'] : 'thumb'; // 'thumb', 'preview', or 'full'
@@ -30,8 +33,6 @@ try {
   // Generate or retrieve cached thumbnail
   $thumbData = generateThumbnail($imagePath, $mode, $size, $config);
 
-  // Build FQDN URL to the cached file
-  $baseUrl = getCurrentUrlPrefix();
   $cacheUrl = $baseUrl . $thumbData['url'];
 
   // Redirect to the cached thumbnail with FQDN URL

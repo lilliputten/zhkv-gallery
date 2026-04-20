@@ -67,7 +67,8 @@ function getCurrentUrl()
 function faviconTag()
 {
   if (file_exists(__DIR__ . '/favicon.ico')) {
-    echo '  <link rel="icon" href="favicon.ico" type="image/x-icon" />' . "\n";
+    $baseUrl = getCurrentUrlPrefix();
+    echo '  <link rel="icon" href="' . $baseUrl . 'favicon.ico" type="image/x-icon" />' . "\n";
   }
 }
 
