@@ -233,10 +233,15 @@ function getImageList($config, $currentImagePath = null)
               $imageName = str_replace('-', ' ', isset($pathInfo['filename']) ? $pathInfo['filename'] : $file);
               $imageRelativePath = str_replace('\\', '/', str_replace($baseDir . DIRECTORY_SEPARATOR, '', $filePath));
 
+              // Load image metadata from Markdown file
+              $imageMetadata = loadImageMetadataFromMarkdown($imageRelativePath);
+
               $images[] = [
                 'name' => $imageName,
                 'path' => $imageRelativePath,
-                'filename' => $file
+                'filename' => $file,
+                'title' => $imageMetadata['title'],
+                'description' => $imageMetadata['description']
               ];
             }
           }

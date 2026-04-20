@@ -80,9 +80,9 @@ if (!empty($listParam) && !empty($scanResults)) {
       if ($currentIndex > 0) {
         $prevFolderKey = $allFolders[$currentIndex - 1];
         $encodedPrevFolder = str_replace('%2F', '/', rawurlencode($prevFolderKey));
-        $folderNav['prev'] = 'index.php?list=' . $encodedPrevFolder;
+        $folderNav['prev'] = $baseUrl . 'index.php?list=' . $encodedPrevFolder;
         if ($useRedirectMode) {
-          $folderNav['prev'] = 'list/' . $encodedPrevFolder;
+          $folderNav['prev'] = $baseUrl . 'list/' . $encodedPrevFolder;
         }
       }
 
@@ -90,9 +90,9 @@ if (!empty($listParam) && !empty($scanResults)) {
       if ($currentIndex < count($allFolders) - 1) {
         $nextFolderKey = $allFolders[$currentIndex + 1];
         $encodedNextFolder = str_replace('%2F', '/', rawurlencode($nextFolderKey));
-        $folderNav['next'] = 'index.php?list=' . $encodedNextFolder;
+        $folderNav['next'] = $baseUrl . 'index.php?list=' . $encodedNextFolder;
         if ($useRedirectMode) {
-          $folderNav['next'] = 'list/' . $encodedNextFolder;
+          $folderNav['next'] = $baseUrl . 'list/' . $encodedNextFolder;
         }
       }
     }
@@ -170,7 +170,15 @@ if (!empty($scanResults)) {
 </head>
 
 <body>
-  <h1 class="title"><?= prepareRichText($galleryTitle) ?></h1>
+  <h1 class="title">
+<? if (!empty($listParam)): ?>
+    <a href="<?= $baseUrl ?>" class="title-link">
+<? endif; ?>
+    <?= prepareRichText($galleryTitle) ?>
+<? if (!empty($listParam)): ?>
+    </a>
+<? endif; ?>
+  </h1>
   <p class="gallery-description"><?= prepareRichText($galleryDescription) ?></p>
 
 <? if (empty($scanResults)): ?>
@@ -212,44 +220,35 @@ if (!empty($scanResults)) {
             <div class="image-item">
 <?
               $encodedPath = str_replace('%2F', '/', rawurlencode($image['path']));
-              $previewUrl = 'thumb.php?mode=preview&image=' . $encodedPath;
-              $thumbUrl = 'thumb.php?image=' . $encodedPath;
-              $viewUrl = 'view.php?image=' . $encodedPath;
+              $previewUrl = $baseUrl . 'thumb.php?mode=preview&image=' . $encodedPath;
+              $thumbUrl = $baseUrl . 'thumb.php?image=' . $encodedPath;
+              $viewUrl = $baseUrl . 'view.php?image=' . $encodedPath;
               if ($useRedirectMode) {
-                $previewUrl = 'preview/' . $encodedPath;
-                $thumbUrl = 'thumb/' . $encodedPath;
-                $viewUrl = 'view/' . $encodedPath;
+                $previewUrl = $baseUrl . 'preview/' . $encodedPath;
+                $thumbUrl = $baseUrl . 'thumb/' . $encodedPath;
+                $viewUrl = $baseUrl . 'view/' . $encodedPath;
               }
 
-              // Load image metadata from JSON file if exists
-              $imageTitle = $image['name'];
-              $imageDescription = "";
+              // Use cached metadata from scanResults (loaded from .md files during cache build)
+              $imageTitle = !empty($image['title']) ? $image['title'] : $image['name'];
+              $imageDescription = isset($image['description']) ? $image['description'] : "";
 
-              // First, try to load from .md file
-              $mdMetadata = loadImageMetadataFromMarkdown($image['path']);
-              if (!empty($mdMetadata['title'])) {
-                $imageTitle = $mdMetadata['title'];
-              }
-              if (!empty($mdMetadata['description'])) {
-                $imageDescription = $mdMetadata['description'];
-              }
-
-              // If no .md file or incomplete data, try JSON file as fallback
-              if (empty($mdMetadata['title']) || empty($mdMetadata['description'])) {
-                // Remove image extension from path before adding .json
-                $jsonFile = $basePath . '/' . removeFileExtension($image['path']) . '.json';
-                if (file_exists($jsonFile)) {
-                  $jsonData = file_get_contents($jsonFile);
-                  $metadata = json_decode($jsonData, true);
-
-                  if ($metadata && !empty($metadata['name']) && empty($mdMetadata['title'])) {
-                    $imageTitle = $metadata['name'];
-                  }
-                  if ($metadata && !empty($metadata['description']) && empty($mdMetadata['description'])) {
-                    $imageDescription = $metadata['description'];
-                  }
-                }
-              }
+              /* // UNUSED: If no cached metadata, try JSON file as fallback (backward compatibility)
+               * if (empty($image['title']) || empty($image['description'])) {
+               *   // Remove image extension from path before adding .json
+               *   $jsonFile = $basePath . '/' . removeFileExtension($image['path']) . '.json';
+               *   if (file_exists($jsonFile)) {
+               *     $jsonData = file_get_contents($jsonFile);
+               *     $metadata = json_decode($jsonData, true);
+               *     if ($metadata && !empty($metadata['name']) && empty($image['title'])) {
+               *       $imageTitle = $metadata['name'];
+               *     }
+               *     if ($metadata && !empty($metadata['description']) && empty($image['description'])) {
+               *       $imageDescription = $metadata['description'];
+               *     }
+               *   }
+               * }
+               */
               ?>
               <a href="<?= $viewUrl ?>">
                 <img src="<?= $thumbUrl ?>" alt="<?= htmlspecialchars($imageTitle) ?>"

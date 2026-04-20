@@ -20,19 +20,39 @@ $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] :
 $vTagPostfix = ''; // isset($vTag) ? '?v=' . $vTag : '';
 $vTagPostfixPlus = ''; // isset($vTag) ? ($useRedirectMode ? '&v=' . $vTag : $vTagPostfix) : '';
 
-// Image properties - try to load from .md file first
+// Image properties - try to load from cache first, then .md file, then config
 $imageTitle = '';
 $description = '';
 
-$mdMetadata = loadImageMetadataFromMarkdown($imagePath);
-if (!empty($mdMetadata['title'])) {
-  $imageTitle = $mdMetadata['title'];
-}
-if (!empty($mdMetadata['description'])) {
-  $description = $mdMetadata['description'];
+// First, try to get metadata from cached image list
+$imageData = getImageList($config, $imagePath);
+$cachedMetadata = null;
+
+// Search for current image in the flat list to get cached metadata
+foreach ($imageData['foldered'] as $folder => $folderData) {
+  foreach ($folderData['images'] as $img) {
+    if ($img['path'] === $imagePath) {
+      $cachedMetadata = $img;
+      break 2;
+    }
+  }
 }
 
-// If no .md file or incomplete data, fallback to config
+if ($cachedMetadata && !empty($cachedMetadata['title'])) {
+  $imageTitle = $cachedMetadata['title'];
+  $description = isset($cachedMetadata['description']) ? $cachedMetadata['description'] : '';
+} else {
+  // If not in cache or no title, try to load from .md file
+  $mdMetadata = loadImageMetadataFromMarkdown($imagePath);
+  if (!empty($mdMetadata['title'])) {
+    $imageTitle = $mdMetadata['title'];
+  }
+  if (!empty($mdMetadata['description'])) {
+    $description = $mdMetadata['description'];
+  }
+}
+
+// If still no data, fallback to config
 if (empty($imageTitle)) {
   $imageTitle = isset($config['name']) ? $config['name'] : '';
 }
