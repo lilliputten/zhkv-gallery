@@ -19,3 +19,7 @@ See solution in the `lilliputten-11ty-site/src/articles/2025/gulp-lqip-plugin/gu
 ---
 
 Use FQDN links for all local links like `styles.css`, `view.css, `index.css` and `styles.js` and `favicon.ico`: It my be refered as `list/favicon.ico` if there is 'list' mode.
+
+---
+
+Don't store LQIP in the cache -- as they're already stored as files by `generateThumbnail`.

@@ -13,6 +13,7 @@ $galleryTitle = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $galleryDescription = isset($config['galleryDescription']) ? $config['galleryDescription'] : 'Image gallery with thumbnails and viewer';
 $thumbSize = isset($config['thumbSize']) ? $config['thumbSize'] : 150;
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
+$lqipThumbSize = isset($config['lqipThumbSize']) ? $config['lqipThumbSize'] : 20; // Extra-small for LQIP
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
 $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
 // $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
@@ -238,27 +239,27 @@ if (!empty($scanResults)) {
               // Use cached metadata from scanResults (loaded from .md files during cache build)
               $imageTitle = !empty($image['title']) ? $image['title'] : $image['name'];
               $imageDescription = isset($image['description']) ? $image['description'] : "";
-
-              /* // UNUSED: If no cached metadata, try JSON file as fallback (backward compatibility)
-               * if (empty($image['title']) || empty($image['description'])) {
-               *   // Remove image extension from path before adding .json
-               *   $jsonFile = $basePath . '/' . removeFileExtension($image['path']) . '.json';
-               *   if (file_exists($jsonFile)) {
-               *     $jsonData = file_get_contents($jsonFile);
-               *     $metadata = json_decode($jsonData, true);
-               *     if ($metadata && !empty($metadata['name']) && empty($image['title'])) {
-               *       $imageTitle = $metadata['name'];
-               *     }
-               *     if ($metadata && !empty($metadata['description']) && empty($image['description'])) {
-               *       $imageDescription = $metadata['description'];
-               *     }
-               *   }
-               * }
-               */
+              
+              // Generate LQIP URL on-demand (thumbnails are already cached as files by generateThumbnail)
+              try {
+                $lqipData = generateThumbnail($image['path'], 'thumb', $lqipThumbSize, $config);
+                $lqipUrl = $baseUrl . $lqipData['url'];
+              } catch (Exception $e) {
+                // If LQIP generation fails, continue without it
+                $lqipUrl = null;
+              }
               ?>
               <a href="<?= $viewUrl ?>">
-                <img src="<?= $thumbUrl ?>" alt="<?= htmlspecialchars($imageTitle) ?>"
-                  width="<?= htmlspecialchars($thumbSize) ?>" height="<?= htmlspecialchars($thumbSize) ?>" loading="lazy" />
+                <div class="image-wrapper"<?= $lqipUrl ? ' data-lqip="' . htmlspecialchars($lqipUrl) . '"' : '' ?>>
+                  <img src="<?= $thumbUrl ?>" alt="<?= htmlspecialchars($imageTitle) ?>"
+                    width="<?= htmlspecialchars($thumbSize) ?>" height="<?= htmlspecialchars($thumbSize) ?>" loading="lazy"
+                    class="image-thumb" />
+<? if ($lqipUrl): ?>
+                  <img src="<?= $lqipUrl ?>" alt="" aria-hidden="true"
+                    width="<?= htmlspecialchars($thumbSize) ?>" height="<?= htmlspecialchars($thumbSize) ?>"
+                    class="image-lqip" />
+<? endif; ?>
+                </div>
                 <div class="image-name">
                   <?= htmlspecialchars($imageTitle) ?>
 
