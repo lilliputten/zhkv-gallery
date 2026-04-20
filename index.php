@@ -240,22 +240,16 @@ if (!empty($scanResults)) {
               $imageTitle = !empty($image['title']) ? $image['title'] : $image['name'];
               $imageDescription = isset($image['description']) ? $image['description'] : "";
 
-              // Generate LQIP URL on-demand (thumbnails are already cached as files by generateThumbnail)
-              try {
-                $lqipData = generateThumbnail($image['path'], 'thumb', $lqipThumbSize, $config);
-                $lqipUrl = $baseUrl . $lqipData['url'];
-              } catch (Exception $e) {
-                // If LQIP generation fails, continue without it
-                $lqipUrl = null;
-              }
-              ?>
+              // Generate LQIP as base64-encoded data URI using helper function
+              $lqipDataUri = generateBase64Thumbnail($image['path'], 'thumb', $lqipThumbSize, $config);
+?>
               <a href="<?= $viewUrl ?>">
-                <div class="image-wrapper"<?= $lqipUrl ? ' data-lqip="' . htmlspecialchars($lqipUrl) . '"' : '' ?>>
+                <div class="image-wrapper"<?= $lqipDataUri ? ' data-lqip="' . htmlspecialchars($lqipDataUri) . '"' : '' ?>>
                   <img src="<?= $thumbUrl ?>" alt="<?= htmlspecialchars($imageTitle) ?>"
                     width="<?= htmlspecialchars($thumbSize) ?>" height="<?= htmlspecialchars($thumbSize) ?>" loading="lazy"
                     class="image-thumb" />
-<? if ($lqipUrl): ?>
-                  <img src="<?= $lqipUrl ?>" alt="" aria-hidden="true"
+<? if ($lqipDataUri): ?>
+                  <img src="<?= $lqipDataUri ?>" alt="" aria-hidden="true"
                     width="<?= htmlspecialchars($thumbSize) ?>" height="<?= htmlspecialchars($thumbSize) ?>"
                     class="image-lqip" />
 <? endif; ?>
