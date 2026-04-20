@@ -137,16 +137,28 @@ if ($navInfo['next']) {
 }
 
 $encodedPath = str_replace('%2F', '/', rawurlencode($imagePath));
+$thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs';
 $useFullMode = true;
 $previewMode = $useFullMode ? 'full' : 'preview';
-$previewUrl = 'thumb.php?mode=' . $previewMode . '&image=' . $encodedPath;
-$thumbUrl = 'thumb.php?image=' . $encodedPath;
+
+// Generate thumbnail URLs using cached files instead of thumb.php
+try {
+  $previewThumbInfo = generateThumbnail($imagePath, $previewMode, $previewSize, $config);
+  $previewUrl = $thumbsDir . '/' . $previewThumbInfo['filename'];
+  
+  $thumbInfo = generateThumbnail($imagePath, 'thumb', $thumbSize, $config);
+  $thumbUrl = $thumbsDir . '/' . $thumbInfo['filename'];
+} catch (Exception $e) {
+  // Fallback to original image if thumbnail generation fails
+  $previewUrl = $imagePath;
+  $thumbUrl = $imagePath;
+}
+
 $viewUrl = 'view.php?image=' . $encodedPath;
 if ($useRedirectMode) {
-  $previewUrl = $previewMode . '/' . $encodedPath;
-  $thumbUrl = 'thumb/' . $encodedPath;
   $viewUrl = 'view/' . $encodedPath;
 }
+
 // Build URLs without escaping issues
 $ogImageUrl = $baseUrl . $previewUrl;
 $thumbImageUrl = $baseUrl . $thumbUrl;
@@ -156,7 +168,7 @@ $previewImageUrl = $baseUrl . $previewUrl;
 $lqipPreviewUrl = null;
 try {
   $lqipData = generateThumbnail($imagePath, 'full', $lqipPreviewSize, $config);
-  $lqipPreviewUrl = $baseUrl . $lqipData['url'];
+  $lqipPreviewUrl = $baseUrl . $thumbsDir . '/' . $lqipData['filename'];
 } catch (Exception $e) {
   // If LQIP generation fails, continue without it
   $lqipPreviewUrl = null;
