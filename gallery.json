@@ -1,6 +1,9 @@
 {
   "title": "Design Gallery",
   "useRedirectMode": true,
+  "imageFormat": "webp",
+  "lqipThumbSize": 20,
+  "lqipPreviewSize": 50,
   "thumbSize": 200,
   "previewSize": 200,
   "maxHeightRatio": 4,

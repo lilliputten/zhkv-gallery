@@ -354,3 +354,297 @@ function prepareRichText($description, $specialChars = true) {
   }
   return preg_replace('/\s+/', ' ', $description);
 }
+
+/**
+ * Generate or retrieve a cached thumbnail/preview image
+ *
+ * This function checks if a thumbnail already exists in cache and generates it if not.
+ * It supports multiple output formats: original format, config-specified format, or parameter-specified format.
+ *
+ * @param string $imagePath Relative path to the source image from project root
+ * @param string $mode Thumbnail mode: 'thumb' (square), 'preview' (scaled), or 'full' (scaled without height limit)
+ * @param int $size Size for the thumbnail/preview (width for thumb, min dimension for preview/full)
+ * @param array $config Configuration array (optional, will load if not provided)
+ * @param string|null $outputFormat Optional output format override ('jpg', 'png', 'gif', 'webp')
+ * @return array Dataset containing thumbnail information:
+ *   - filename: Cache filename
+ *   - path: Full server path to cache file
+ *   - url: Public URL to cache file (relative)
+ *   - width: Thumbnail width
+ *   - height: Thumbnail height
+ *   - exists: Boolean indicating if cache was generated or already existed
+ * @throws Exception If image processing fails
+ */
+function generateThumbnail($imagePath, $mode = 'thumb', $size = 150, $config = null, $outputFormat = null) {
+  global $isDev;
+
+  // Load config if not provided
+  if ($config === null) {
+    $config = loadConfig($imagePath);
+  }
+
+  // Get configuration values
+  $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs';
+  $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : null;
+  $configImageFormat = isset($config['imageFormat']) ? $config['imageFormat'] : null;
+
+  // Security: Validate the path to prevent directory traversal attacks
+  if (empty($imagePath)) {
+    throw new Exception('No image specified');
+  }
+
+  // Decode URL encoding
+  $imagePath = urldecode($imagePath);
+
+  // Prevent directory traversal attacks
+  $basePath = realpath(__DIR__);
+  $fullPath = realpath(__DIR__ . '/' . $imagePath);
+
+  if ($fullPath === false || strpos($fullPath, $basePath) !== 0) {
+    throw new Exception('Invalid image path', 403);
+  }
+
+  // Check if file exists
+  if (!file_exists($fullPath)) {
+    throw new Exception('Image not found: ' . $imagePath, 404);
+  }
+
+  // Get image info
+  $imageInfo = getimagesize($fullPath);
+  if ($imageInfo === false) {
+    throw new Exception('Not a valid image file: ' . $imagePath, 422);
+  }
+
+  $mimeType = $imageInfo['mime'];
+  $originalWidth = $imageInfo[0];
+  $originalHeight = $imageInfo[1];
+
+  // Validate image dimensions
+  if ($originalWidth <= 0 || $originalHeight <= 0) {
+    throw new Exception('Invalid image dimensions: ' . $originalWidth . 'x' . $originalHeight, 422);
+  }
+
+  // Create thumbs directory if it doesn't exist
+  $thumbsPath = __DIR__ . '/' . $thumbsDir;
+  if (!file_exists($thumbsPath)) {
+    mkdir($thumbsPath, 0755, true);
+  }
+
+  // Generate cache filename based on original image name and size
+  $pathInfo = pathinfo($imagePath);
+  $originalName = $pathInfo['filename'];
+  $fileExt = strtolower($pathInfo['extension']);
+  $currentHash = substr(md5_file($fullPath), 0, 8);
+
+  // Calculate dimensions based on mode
+  $srcRatio = $originalWidth / $originalHeight;
+
+  if ($mode === 'preview' || $mode === 'full') {
+    // Scale so the minimum dimension equals $size
+    $scale = max($size / $originalWidth, $size / $originalHeight);
+    $newWidth = floor($originalWidth * $scale);
+    $newHeight = floor($originalHeight * $scale);
+
+    // Crop height from the top if it exceeds maxHeightRatio (preview mode only, not full)
+    if ($mode === 'preview' && $maxHeightRatio) {
+      $maxThumbHeight = $newWidth * $maxHeightRatio;
+      if ($newHeight > $maxThumbHeight) {
+        $newHeight = (int) $maxThumbHeight;
+      }
+    }
+  } else {
+    // Square thumbnail
+    $newWidth = $size;
+    $newHeight = $size;
+  }
+
+  // Determine output format
+  // Priority: parameter > config > original format
+  $finalFormat = $outputFormat ?: $configImageFormat ?: $fileExt;
+
+  // Map MIME type to extension if using original format
+  if (!$outputFormat && !$configImageFormat) {
+    switch ($mimeType) {
+      case 'image/jpeg':
+        $finalFormat = 'jpg';
+        break;
+      case 'image/png':
+        $finalFormat = 'png';
+        break;
+      case 'image/gif':
+        $finalFormat = 'gif';
+        break;
+      case 'image/webp':
+        $finalFormat = 'webp';
+        break;
+    }
+  }
+
+  // Build cache filename
+  $modeSuffix = ($mode === 'full') ? 'full' : (($mode === 'preview') ? 'preview' : 'thumb');
+  $cacheFilename = $originalName . '-' . $currentHash . '-' . $modeSuffix . '-' . $newWidth . 'x' . $newHeight . '.' . $finalFormat;
+  $cachePath = $thumbsPath . '/' . $cacheFilename;
+
+  // Check if cached thumbnail exists
+  $cacheExists = file_exists($cachePath);
+
+  if (!$cacheExists) {
+    // Cache doesn't exist, generate it
+
+    // Try GD library first
+    if (extension_loaded('gd')) {
+      // Create image resource based on type
+      switch ($mimeType) {
+        case 'image/jpeg':
+          $sourceImage = @imagecreatefromjpeg($fullPath);
+          break;
+        case 'image/png':
+          $sourceImage = @imagecreatefrompng($fullPath);
+          break;
+        case 'image/gif':
+          $sourceImage = @imagecreatefromgif($fullPath);
+          break;
+        case 'image/webp':
+          $sourceImage = @imagecreatefromwebp($fullPath);
+          break;
+        default:
+          throw new Exception('Unsupported image format: ' . $mimeType, 415);
+      }
+
+      if (!$sourceImage) {
+        throw new Exception('Failed to create image resource from: ' . $imagePath . ' (format: ' . $mimeType . ')', 500);
+      }
+
+      // Create thumbnail image
+      $thumbnail = imagecreatetruecolor($newWidth, $newHeight);
+
+      // Preserve transparency for PNG and GIF
+      if ($mimeType === 'image/png' || $mimeType === 'image/gif') {
+        imagealphablending($thumbnail, false);
+        imagesavealpha($thumbnail, true);
+        $transparent = imagecolorallocatealpha($thumbnail, 255, 255, 255, 127);
+        imagefill($thumbnail, 0, 0, $transparent);
+      }
+
+      // Calculate crop coordinates
+      if ($mode === 'preview' || $mode === 'full') {
+        $cropX = 0;
+        $cropY = 0;
+        $cropWidth = $originalWidth;
+        $cropHeight = min($originalHeight, (int) floor($newHeight / max($size / $originalWidth, $size / $originalHeight)));
+      } else {
+        // Square crop for thumb mode
+        if ($srcRatio > 1) {
+          // Wider than tall: crop sides
+          $cropHeight = $originalHeight;
+          $cropWidth = $originalHeight;
+          $cropX = (int) floor(($originalWidth - $cropWidth) / 2);
+          $cropY = 0;
+        } else {
+          // Taller than wide: crop bottom
+          $cropWidth = $originalWidth;
+          $cropHeight = $originalWidth;
+          $cropX = 0;
+          $cropY = 0;
+        }
+      }
+
+      // Resize the image
+      imagecopyresampled(
+        $thumbnail,
+        $sourceImage,
+        0, 0, // destination point
+        $cropX, $cropY, // source point
+        $newWidth, $newHeight, // Destination dimensions
+        $cropWidth, $cropHeight // Source dimensions
+      );
+
+      // Save thumbnail to cache based on output format
+      switch ($finalFormat) {
+        case 'png':
+          imagepng($thumbnail, $cachePath, 6); // Compression level 0-9, 6 is a good balance
+          break;
+        case 'gif':
+          imagegif($thumbnail, $cachePath);
+          break;
+        case 'webp':
+          imagewebp($thumbnail, $cachePath, 85); // Quality 0-100
+          break;
+        case 'jpg':
+        default:
+          imagejpeg($thumbnail, $cachePath, 85); // Quality 0-100
+          break;
+      }
+
+      imagedestroy($sourceImage);
+      imagedestroy($thumbnail);
+    }
+    // Try ImageMagick as fallback
+    elseif (class_exists('Imagick')) {
+      try {
+        $imagick = new Imagick($fullPath);
+
+        // Scale or crop based on mode
+        if ($mode === 'preview' || $mode === 'full') {
+          // Scale proportionally without cropping
+          $imagick->thumbnailImage($newWidth, $newHeight, true);
+        } else {
+          // Crop to square from center
+          $imagick->cropThumbnailImage($size, $size);
+        }
+        $imagick->setImagePage($size, $size, 0, 0);
+
+        // Set output format
+        switch ($finalFormat) {
+          case 'png':
+            $imagick->setImageFormat('png');
+            break;
+          case 'gif':
+            $imagick->setImageFormat('gif');
+            break;
+          case 'webp':
+            $imagick->setImageFormat('webp');
+            break;
+          case 'jpg':
+          default:
+            $imagick->setImageFormat('jpeg');
+            break;
+        }
+
+        // Save to cache
+        $imagick->writeImage($cachePath);
+        $imagick->destroy();
+      } catch (Exception $e) {
+        throw new Exception('ImageMagick error: ' . $e->getMessage(), 500);
+      }
+    }
+    // No image library available
+    else {
+      throw new Exception('No image processing library available. Enable GD or ImageMagick in php.ini.', 500);
+    }
+
+    // Verify cache was created successfully
+    if (!file_exists($cachePath)) {
+      throw new Exception('Failed to generate thumbnail cache', 500);
+    }
+  }
+
+  // Verify cache path is valid
+  $resolvedCache = realpath($cachePath);
+  if ($resolvedCache === false || strpos($resolvedCache, realpath($thumbsPath)) !== 0) {
+    throw new Exception('Invalid cache path', 403);
+  }
+
+  // Return dataset with thumbnail information
+  return [
+    'filename' => $cacheFilename,
+    'path' => $cachePath,
+    'url' => $thumbsDir . '/' . $cacheFilename,
+    'width' => $newWidth,
+    'height' => $newHeight,
+    'exists' => $cacheExists,
+    'format' => $finalFormat,
+    'mode' => $mode,
+    'size' => $size
+  ];
+}

@@ -59,17 +59,17 @@ if (!empty($listParam) && !empty($scanResults)) {
   // Get all folder keys from the full image list
   $fullImageData = getImageList($config);
   $allFolders = array_keys($fullImageData['foldered']);
-  
+
   // Find current folder position
   $currentFolderKey = null;
   foreach ($scanResults as $folderKey => $folderData) {
     $currentFolderKey = $folderKey;
     break; // Get the first (and likely only) folder key
   }
-  
+
   if ($currentFolderKey !== null) {
     $currentIndex = array_search($currentFolderKey, $allFolders);
-    
+
     if ($currentIndex !== false) {
       // Get previous folder
       if ($currentIndex > 0) {
@@ -80,7 +80,7 @@ if (!empty($listParam) && !empty($scanResults)) {
           $folderNav['prev'] = 'list/' . $encodedPrevFolder;
         }
       }
-      
+
       // Get next folder
       if ($currentIndex < count($allFolders) - 1) {
         $nextFolderKey = $allFolders[$currentIndex + 1];
