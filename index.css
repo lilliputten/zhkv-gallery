@@ -103,13 +103,15 @@ h1.title {
   color: inherit;
   display: block;
   max-width: 100%;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
-.image-item img {
+.image-item .image-wrapper {
   background-color: #f7f7f7;
   border-radius: 4px;
   box-shadow: 0 0 8px rgba(0,0,0,0.2);
   border: 1px solid rgba(0,0,0,0.2);
+}
+.image-item img {
   display: block;
   max-width: 100%;
   overflow: hidden;
@@ -117,48 +119,23 @@ h1.title {
   box-sizing: content-box;
 }
 
-/* LQIP (Low Quality Image Placeholder) Styles */
+/* Index-specific: square thumbnails layout */
 .image-wrapper {
-  position: relative;
   width: 100%;
-  padding-bottom: 100%; /* Square aspect ratio */
-  overflow: hidden;
+  /* padding-bottom: 100%; [> Square aspect ratio for thumbnails <] */
   border-radius: 4px;
   background-color: #f7f7f7;
 }
 
+/* Index-specific: square thumbnails use object-fit: cover */
 .image-wrapper .image-thumb,
 .image-wrapper .image-lqip {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   object-fit: cover;
-  display: block;
 }
 
+/* Index-specific: smaller blur for thumbnails */
 .image-wrapper .image-lqip {
   filter: blur(10px);
-  transform: scale(1.1); /* Prevent blur edges from showing */
-  z-index: 1;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.image-wrapper .image-thumb {
-  z-index: 2;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-/* When thumbnail loads, fade it in and hide LQIP */
-.image-wrapper .image-thumb.loaded {
-  opacity: 1;
-}
-
-.image-wrapper .image-thumb.loaded + .image-lqip,
-.image-wrapper:has(.image-thumb.loaded) .image-lqip {
-  opacity: 0;
 }
 
 .image-name {

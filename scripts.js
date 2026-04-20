@@ -5,10 +5,17 @@ if (typeof lucide !== 'undefined') {
 // LQIP (Low Quality Image Placeholder) - Fade-in effect for thumbnails
 document.addEventListener('DOMContentLoaded', function() {
   const imageWrappers = document.querySelectorAll('.image-wrapper[data-lqip]');
-  
+
   imageWrappers.forEach(function(wrapper) {
     const thumb = wrapper.querySelector('.image-thumb');
-    
+
+    console.log('XXX', {
+      complete: thumb?.complete,
+      thumb,
+      wrapper,
+      imageWrappers,
+    });
+
     if (thumb) {
       // Check if image is already cached/loaded
       if (thumb.complete) {
@@ -18,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
         thumb.addEventListener('load', function() {
           thumb.classList.add('loaded');
         });
-        
+
         // Handle loading errors
         thumb.addEventListener('error', function() {
           // If thumbnail fails to load, keep LQIP visible

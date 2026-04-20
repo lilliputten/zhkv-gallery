@@ -14,6 +14,7 @@ $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
 
 $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
 $thumbSize = isset($_GET['size']) ? (int) $_GET['size'] : (isset($config['thumbSize']) ? $config['thumbSize'] : 150);
+$lqipPreviewSize = isset($config['lqipPreviewSize']) ? $config['lqipPreviewSize'] : 50; // Small size for LQIP preview
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
 
@@ -150,6 +151,17 @@ if ($useRedirectMode) {
 $ogImageUrl = $baseUrl . $previewUrl;
 $thumbImageUrl = $baseUrl . $thumbUrl;
 $previewImageUrl = $baseUrl . $previewUrl;
+
+// Generate LQIP preview URL on-demand (thumbnails are already cached as files by generateThumbnail)
+$lqipPreviewUrl = null;
+try {
+  $lqipData = generateThumbnail($imagePath, 'full', $lqipPreviewSize, $config);
+  $lqipPreviewUrl = $baseUrl . $lqipData['url'];
+} catch (Exception $e) {
+  // If LQIP generation fails, continue without it
+  $lqipPreviewUrl = null;
+}
+
 $getCurrentUrl = getCurrentUrl();
 
 $shortTitle = $imageTitle ? $imageTitle : $imagePath;
@@ -182,26 +194,25 @@ $pageDescription = $description ? $description : basename($imagePath);
   <!-- Shared headers -->
 <? include('common-headers-post.php') ?>
   <!-- Resources -->
-  <link rel="preload" href="<?= $thumbImageUrl . $vTagPostfixPlus ?>" as="image">
-  <link rel="preload" href="<?= $previewImageUrl . $vTagPostfixPlus ?>" as="image">
+<? if ($lqipPreviewUrl): ?>
+  <link rel="preload" href="<?= $lqipPreviewUrl . $vTagPostfixPlus ?>" as="image">
+<? endif; ?>
   <link rel="stylesheet" href="<?= $baseUrl ?>view.css?v=<?= $projectTag ?>" />
+<? if ($maxWidth): ?>
   <style>
-    .image-wrapper,
-    .image {
-<? if ($maxWidth) { ?>
-      max-width: <?= $maxWidth ?>px;
-<? } ?>
-      background-image: url("<?= $previewImageUrl . $vTagPostfixPlus ?>");
-    }
     .image-wrapper {
-      background-image: url("<?= $thumbImageUrl . $vTagPostfixPlus ?>");
+      max-width: <?= $maxWidth ?>px;
     }
   </style>
+<? endif; ?>
 </head>
 
 <body>
-  <div class="image-wrapper">
-    <img class="image" src="<?= $encodedPath . $vTagPostfix ?>" border="0" loading="lazy" />
+  <div class="image-wrapper"<?= $lqipPreviewUrl ? ' data-lqip="true"' : '' ?>>
+    <img class="image-thumb" src="<?= $encodedPath . $vTagPostfix ?>" border="0" loading="lazy" alt="<?= htmlspecialchars($shortTitle) ?>" />
+<? if ($lqipPreviewUrl): ?>
+    <img class="image-lqip" src="<?= $lqipPreviewUrl . $vTagPostfixPlus ?>" alt="" aria-hidden="true" />
+<? endif; ?>
   </div>
 
   <div class="float-panel left bottom">

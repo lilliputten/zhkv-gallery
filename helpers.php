@@ -205,6 +205,12 @@ function getImageList($config, $currentImagePath = null)
           continue;
         }
 
+        // Skip thumbs directory
+        $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs';
+        if ($dirName === $thumbsDir) {
+          continue;
+        }
+
         // Get relative path from base directory
         $relativePath = str_replace('\\', '/', str_replace($baseDir . DIRECTORY_SEPARATOR, '', $dirPath));
 
@@ -619,8 +625,21 @@ function generateThumbnail($imagePath, $mode = 'thumb', $size = 150, $config = n
           break;
       }
 
-      imagedestroy($sourceImage);
-      imagedestroy($thumbnail);
+      // Free up memory associated with the image resources
+      // imagedestroy() is deprecated since PHP 8.5 as resources are automatically managed
+      if (PHP_VERSION_ID < 80500) {
+        if (is_resource($sourceImage)) {
+          imagedestroy($sourceImage);
+        }
+        if (is_resource($thumbnail)) {
+          imagedestroy($thumbnail);
+        }
+      }
+      
+      // Explicitly set to null to help garbage collection in older PHP versions
+      // and ensure variables don't hold references unnecessarily
+      $sourceImage = null;
+      $thumbnail = null;
     }
     // Try ImageMagick as fallback
     elseif (class_exists('Imagick')) {

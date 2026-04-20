@@ -52,3 +52,52 @@
 .float-panel.top {
   top: 20px;
 }
+
+/* Image wrapper with LQIP support - shared across pages */
+.image-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-wrapper .image,
+.image-wrapper .image-thumb,
+.image-wrapper .image-lqip {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+
+.image-wrapper .image-lqip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: blur(5px);
+  transform: scale(1.1); /* Prevent blur edges from showing */
+  z-index: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.image-wrapper .image,
+.image-wrapper .image-thumb {
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* When image loads, fade it in and hide LQIP */
+.image-wrapper .image.loaded,
+.image-wrapper .image-thumb.loaded {
+  opacity: 1;
+}
+
+.image-wrapper .image.loaded + .image-lqip,
+.image-wrapper .image-thumb.loaded + .image-lqip,
+.image-wrapper:has(.image.loaded) .image-lqip,
+.image-wrapper:has(.image-thumb.loaded) .image-lqip {
+  opacity: 0;
+}

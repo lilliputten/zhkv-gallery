@@ -56,8 +56,8 @@ if (!empty($rootMetadata['description'])) {
   $galleryDescription = $rootMetadata['description'];
 }
 
-// Use foldered data for display
-$scanResults = $imageData['foldered'];
+// Use foldered data for display (already filtered by list parameter if provided)
+// Note: $scanResults was already set above with optional filtering applied
 
 // Calculate folder navigation (prev/next/home)
 $folderNav = [
@@ -239,7 +239,7 @@ if (!empty($scanResults)) {
               // Use cached metadata from scanResults (loaded from .md files during cache build)
               $imageTitle = !empty($image['title']) ? $image['title'] : $image['name'];
               $imageDescription = isset($image['description']) ? $image['description'] : "";
-              
+
               // Generate LQIP URL on-demand (thumbnails are already cached as files by generateThumbnail)
               try {
                 $lqipData = generateThumbnail($image['path'], 'thumb', $lqipThumbSize, $config);
