@@ -1,6 +1,7 @@
 {
   "title": "Design Gallery",
   "useRedirectMode": true,
+  "useThumbRedirects": true,
   "imageFormat": "webp",
   "lqipThumbSize": 50,
   "lqipPreviewSize": 200,

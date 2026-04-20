@@ -227,12 +227,37 @@ if (!empty($scanResults)) {
             <div class="image-item">
 <?
               $encodedPath = str_replace('%2F', '/', rawurlencode($image['path']));
-              $previewUrl = $baseUrl . 'thumb.php?mode=preview&image=' . $encodedPath;
-              $thumbUrl = $baseUrl . 'thumb.php?image=' . $encodedPath;
+              $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs';
+              
+              // Determine which approach to use for thumbnail URLs
+              $useThumbRedirects = isset($config['useThumbRedirects']) ? $config['useThumbRedirects'] : false;
+              
+              if ($useThumbRedirects) {
+                // Old approach: Use thumb.php endpoint (dynamic processing)
+                $previewUrl = $baseUrl . 'thumb.php?mode=preview&image=' . $encodedPath;
+                $thumbUrl = $baseUrl . 'thumb.php?image=' . $encodedPath;
+                
+                if ($useRedirectMode) {
+                  $previewUrl = $baseUrl . 'preview/' . $encodedPath;
+                  $thumbUrl = $baseUrl . 'thumb/' . $encodedPath;
+                }
+              } else {
+                // New approach: Use direct cached file URLs (better performance)
+                try {
+                  $previewThumbInfo = generateThumbnail($image['path'], 'preview', $previewSize, $config);
+                  $previewUrl = $baseUrl . $thumbsDir . '/' . $previewThumbInfo['filename'];
+                  
+                  $thumbInfo = generateThumbnail($image['path'], 'thumb', $thumbSize, $config);
+                  $thumbUrl = $baseUrl . $thumbsDir . '/' . $thumbInfo['filename'];
+                } catch (Exception $e) {
+                  // Fallback to thumb.php if thumbnail generation fails
+                  $previewUrl = $baseUrl . 'thumb.php?mode=preview&image=' . $encodedPath;
+                  $thumbUrl = $baseUrl . 'thumb.php?image=' . $encodedPath;
+                }
+              }
+              
               $viewUrl = $baseUrl . 'view.php?image=' . $encodedPath;
               if ($useRedirectMode) {
-                $previewUrl = $baseUrl . 'preview/' . $encodedPath;
-                $thumbUrl = $baseUrl . 'thumb/' . $encodedPath;
                 $viewUrl = $baseUrl . 'view/' . $encodedPath;
               }
 

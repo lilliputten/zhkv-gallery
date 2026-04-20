@@ -141,17 +141,31 @@ $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs
 $useFullMode = true;
 $previewMode = $useFullMode ? 'full' : 'preview';
 
-// Generate thumbnail URLs using cached files instead of thumb.php
-try {
-  $previewThumbInfo = generateThumbnail($imagePath, $previewMode, $previewSize, $config);
-  $previewUrl = $thumbsDir . '/' . $previewThumbInfo['filename'];
+// Determine which approach to use for thumbnail URLs
+$useThumbRedirects = isset($config['useThumbRedirects']) ? $config['useThumbRedirects'] : false;
+
+if ($useThumbRedirects) {
+  // Old approach: Use thumb.php endpoint (dynamic processing)
+  $previewUrl = 'thumb.php?mode=' . $previewMode . '&image=' . $encodedPath;
+  $thumbUrl = 'thumb.php?image=' . $encodedPath;
   
-  $thumbInfo = generateThumbnail($imagePath, 'thumb', $thumbSize, $config);
-  $thumbUrl = $thumbsDir . '/' . $thumbInfo['filename'];
-} catch (Exception $e) {
-  // Fallback to original image if thumbnail generation fails
-  $previewUrl = $imagePath;
-  $thumbUrl = $imagePath;
+  if ($useRedirectMode) {
+    $previewUrl = $previewMode . '/' . $encodedPath;
+    $thumbUrl = 'thumb/' . $encodedPath;
+  }
+} else {
+  // New approach: Use direct cached file URLs (better performance)
+  try {
+    $previewThumbInfo = generateThumbnail($imagePath, $previewMode, $previewSize, $config);
+    $previewUrl = $thumbsDir . '/' . $previewThumbInfo['filename'];
+    
+    $thumbInfo = generateThumbnail($imagePath, 'thumb', $thumbSize, $config);
+    $thumbUrl = $thumbsDir . '/' . $thumbInfo['filename'];
+  } catch (Exception $e) {
+    // Fallback to original image if thumbnail generation fails
+    $previewUrl = $imagePath;
+    $thumbUrl = $imagePath;
+  }
 }
 
 $viewUrl = 'view.php?image=' . $encodedPath;
