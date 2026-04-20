@@ -255,10 +255,11 @@ if ($resolvedCache === false || strpos($resolvedCache, realpath($thumbsPath)) !=
   dieWithError('Invalid cache path', 403);
 }
 
-// Build the public URL to the cache file
-$cacheUrl = $thumbsDir . '/' . $cacheFilename;
+// Build the FQDN URL to the cache file
+$baseUrl = getCurrentUrlPrefix();
+$cacheUrl = $baseUrl . $thumbsDir . '/' . $cacheFilename;
 
-// Redirect to the cached thumbnail
+// Redirect to the cached thumbnail with FQDN URL
 header('Location: ' . $cacheUrl, true, 302);
 header('Cache-Control: no-cache, must-revalidate');
 exit;

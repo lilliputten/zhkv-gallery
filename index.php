@@ -47,7 +47,55 @@ if (!empty($mdMetadata['description'])) {
   $galleryDescription = $mdMetadata['description'];
 }
 
+// Calculate folder navigation (prev/next/home)
+$folderNav = [
+  'prev' => null,
+  'next' => null,
+  'hasRoot' => !empty($listParam) // Show home button if we're in a list view
+];
+
+// Only calculate navigation if we're in list mode (viewing a specific folder)
+if (!empty($listParam) && !empty($scanResults)) {
+  // Get all folder keys from the full image list
+  $fullImageData = getImageList($config);
+  $allFolders = array_keys($fullImageData['foldered']);
+  
+  // Find current folder position
+  $currentFolderKey = null;
+  foreach ($scanResults as $folderKey => $folderData) {
+    $currentFolderKey = $folderKey;
+    break; // Get the first (and likely only) folder key
+  }
+  
+  if ($currentFolderKey !== null) {
+    $currentIndex = array_search($currentFolderKey, $allFolders);
+    
+    if ($currentIndex !== false) {
+      // Get previous folder
+      if ($currentIndex > 0) {
+        $prevFolderKey = $allFolders[$currentIndex - 1];
+        $encodedPrevFolder = str_replace('%2F', '/', rawurlencode($prevFolderKey));
+        $folderNav['prev'] = 'index.php?list=' . $encodedPrevFolder;
+        if ($useRedirectMode) {
+          $folderNav['prev'] = 'list/' . $encodedPrevFolder;
+        }
+      }
+      
+      // Get next folder
+      if ($currentIndex < count($allFolders) - 1) {
+        $nextFolderKey = $allFolders[$currentIndex + 1];
+        $encodedNextFolder = str_replace('%2F', '/', rawurlencode($nextFolderKey));
+        $folderNav['next'] = 'index.php?list=' . $encodedNextFolder;
+        if ($useRedirectMode) {
+          $folderNav['next'] = 'list/' . $encodedNextFolder;
+        }
+      }
+    }
+  }
+}
+
 // Urls
+// $urlPath = getCurrentUrlPath();
 $baseUrl = getCurrentUrlPrefix();
 $currentUrl = getCurrentUrl();
 
@@ -117,6 +165,7 @@ if (!empty($scanResults)) {
 ?>
   <!-- Shared headers -->
 <? include('common-headers-post.php') ?>
+  <link rel="stylesheet" href="styles.css?v=<?= $vTag ?>" />
   <link rel="stylesheet" href="index.css" />
 </head>
 
@@ -221,6 +270,21 @@ if (!empty($scanResults)) {
         </div>
       </div>
 <? endforeach ?>
+<? endif ?>
+
+  <!-- Folder Navigation Buttons (Floating) -->
+<? if ($folderNav['prev'] || $folderNav['next'] || $folderNav['hasRoot']): ?>
+  <div class="float-panel left bottom">
+<? if ($folderNav['prev']): ?>
+      <a href="<?= $folderNav['prev'] ?>" class="nav-button" title="Previous folder"><i data-lucide="arrow-left"></i></a>
+<? endif ?>
+<? if ($folderNav['hasRoot']): ?>
+    <a href="<?= $baseUrl ?>" class="nav-button" title="Back to gallery home"><i data-lucide="home"></i></a>
+<? endif ?>
+<? if ($folderNav['next']): ?>
+      <a href="<?= $folderNav['next'] ?>" class="nav-button" title="Next folder"><i data-lucide="arrow-right"></i></a>
+<? endif ?>
+  </div>
 <? endif ?>
 
   <!-- Shared scripts -->

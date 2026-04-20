@@ -49,9 +49,14 @@ function getCurrentUrlBase()
   return $protocol . '://' . $_SERVER['HTTP_HOST'];
 }
 
+function getCurrentUrlPath()
+{
+  return rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
+}
+
 function getCurrentUrlPrefix()
 {
-  return getCurrentUrlBase() . rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/') . '/';
+  return getCurrentUrlBase() . getCurrentUrlPath() . '/';
 }
 
 function getCurrentUrl()

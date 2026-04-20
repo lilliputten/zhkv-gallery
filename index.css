@@ -45,11 +45,10 @@ h1.title {
 .section-link {
   color: inherit;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.2s;
 }
 .section-link:hover {
-  color: #3498db;
-  text-decoration: underline;
+  color: #39d;
 }
 .section-description {
   color: #666;
