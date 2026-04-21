@@ -6,7 +6,12 @@ $isDev = ($serverPort === 8000);
 
 $basePath = str_replace('\\', '/', __DIR__);
 
-$projectTag = 'v0.0.2a';
+$projectTag = !$isDev ? 'v1.0.2' : '';
+$vTag = isset($config['vTag']) ? $config['vTag'] : $projectTag;
+$projectTagPostfix = !$isDev && !empty($vTag) ? '?v=' . $vTag : '';
+
+$vTagPostfix = ''; // isset($vTag) ? '?v=' . $vTag : '';
+$vTagPostfixPlus = ''; // isset($vTag) ? ($useRedirectMode ? '&v=' . $vTag : $vTagPostfix) : '';
 
 /**
  * Load configuration from a folder by merging gallery.json and gallery.local.json files
@@ -49,26 +54,26 @@ function loadFolderConfig($folderPath, &$config, $configName = 'gallery')
  */
 function parseSizeToBytes($size) {
   $size = trim($size);
-  
+
   // Handle empty or invalid input
   if (empty($size)) {
     return -1;
   }
-  
+
   $last = strtolower($size[strlen($size) - 1]);
-  
+
   // Check if the last character is a letter (suffix)
   if (ctype_alpha($last)) {
     // Remove the suffix for numeric conversion
     $numericPart = substr($size, 0, -1);
-    
+
     // Validate that the numeric part is actually numeric
     if (!is_numeric($numericPart)) {
       return -1;
     }
-    
+
     $size = (float)$numericPart;
-    
+
     switch ($last) {
       case 'g':
         $size *= 1024;

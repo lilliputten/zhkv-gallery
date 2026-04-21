@@ -2,7 +2,7 @@
 
 A lightweight PHP-based image gallery system that automatically scans directories for images, generates thumbnails, and displays them in an organized gallery interface.
 
-Public link: http://temp.lilliputten.ru/zdkv/
+Demo link: http://temp.lilliputten.ru/zdkv/
 
 Repository: https://github.com/lilliputten/zhkv-gallery
 

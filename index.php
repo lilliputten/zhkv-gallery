@@ -20,9 +20,6 @@ $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRe
 // $indexCacheValidMins = isset($config['indexCacheValidMins']) ? $config['indexCacheValidMins'] : 30;
 // $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
 
-$vTagPostfix = ''; // isset($vTag) ? '?v=' . $vTag : '';
-$vTagPostfixPlus = ''; // isset($vTag) ? ($useRedirectMode ? '&v=' . $vTag : $vTagPostfix) : '';
-
 // Get list parameter if provided
 $listParam = isset($_GET['list']) ? $_GET['list'] : null;
 

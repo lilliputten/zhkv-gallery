@@ -8,7 +8,6 @@ $baseUrl = getCurrentUrlPrefix();
 $imagePath = isset($_GET['image']) ? $_GET['image'] : '';
 
 $config = loadConfig($imagePath);
-$vTag = isset($config['vTag']) ? $config['vTag'] : $projectTag;
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
 
@@ -17,9 +16,6 @@ $thumbSize = isset($_GET['size']) ? (int) $_GET['size'] : (isset($config['thumbS
 $lqipPreviewSize = isset($config['lqipPreviewSize']) ? $config['lqipPreviewSize'] : 50; // Small size for LQIP preview
 $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
-
-$vTagPostfix = ''; // isset($vTag) ? '?v=' . $vTag : '';
-$vTagPostfixPlus = ''; // isset($vTag) ? ($useRedirectMode ? '&v=' . $vTag : $vTagPostfix) : '';
 
 // Image properties - try to load from cache first, then .md file, then config
 $imageTitle = '';
@@ -194,6 +190,9 @@ $shortTitle = $imageTitle ? $imageTitle : $imagePath;
 $pageTitle = $title . ': ' . $shortTitle;
 $pageDescription = $description ? $description : basename($imagePath);
 
+/** Use lqip overlay image? Otherwise the background image will be used */
+$useLqipImage = false;
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -220,23 +219,32 @@ $pageDescription = $description ? $description : basename($imagePath);
   <!-- Shared headers -->
 <? include('common-headers-post.php') ?>
   <!-- Resources -->
-<? if ($lqipPreviewUrl): ?>
+<? if ($useLqipImage && $lqipPreviewUrl): ?>
   <link rel="preload" href="<?= $lqipPreviewUrl . $vTagPostfixPlus ?>" as="image">
 <? endif; ?>
-  <link rel="stylesheet" href="<?= $baseUrl ?>view.css?v=<?= $projectTag ?>" />
+  <link rel="stylesheet" href="<?= $baseUrl ?>view.css<?= $projectTagPostfix ?>" />
 <? if ($maxWidth): ?>
   <style>
     .image-wrapper {
       max-width: <?= $maxWidth ?>px;
+<? if (!$useLqipImage): ?>
+      background-image: url("<?= $lqipPreviewUrl . $vTagPostfixPlus ?>");
+<? endif; ?>
     }
   </style>
 <? endif; ?>
 </head>
 
 <body>
-  <div class="image-wrapper"<?= $lqipPreviewUrl ? ' data-lqip="true"' : '' ?>>
-    <img class="image-thumb" src="<?= $encodedPath . $vTagPostfix ?>" border="0" loading="lazy" alt="<?= htmlspecialchars($shortTitle) ?>" />
-<? if ($lqipPreviewUrl): ?>
+  <div class="image-wrapper"<?= $useLqipImage && $lqipPreviewUrl ? ' data-lqip="true"' : '' ?>>
+    <img
+      class="image-thumb"
+      src="<?= $encodedPath . $vTagPostfix ?>"
+      border="0"
+      loading="lazy"
+      alt="<?= htmlspecialchars($shortTitle) ?>"
+    />
+<? if ($useLqipImage && $lqipPreviewUrl): ?>
     <img class="image-lqip" src="<?= $lqipPreviewUrl . $vTagPostfixPlus ?>" alt="" aria-hidden="true" />
 <? endif; ?>
   </div>
