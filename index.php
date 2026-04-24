@@ -282,13 +282,22 @@ if (!empty($scanResults)) {
 ?>
               <a href="<?= $viewUrl ?>">
                 <div class="image-wrapper"<?= $lqipDataUri ? ' data-lqip="' . htmlspecialchars($lqipDataUri) . '"' : '' ?>>
-                  <img src="<?= $thumbUrl ?>" alt="<?= htmlspecialchars($imageTitle) ?>"
-                    width="<?= htmlspecialchars($thumbSize) ?>" height="<?= htmlspecialchars($thumbSize) ?>" loading="lazy"
-                    class="image-thumb" />
+                  <img
+                    src="<?= $thumbUrl ?>"
+                    alt="<?= htmlspecialchars($imageTitle) ?>"
+                    width="<?= htmlspecialchars($thumbSize) ?>"
+                    height="<?= htmlspecialchars($thumbSize) ?>"
+                    loading="lazy"
+                    class="image-thumb"
+                   />
 <? if ($lqipDataUri): ?>
-                  <img src="<?= $lqipDataUri ?>" alt="" aria-hidden="true"
-                    width="<?= htmlspecialchars($thumbSize) ?>" height="<?= htmlspecialchars($thumbSize) ?>"
-                    class="image-lqip" />
+                  <img
+                    src="<?= $lqipDataUri ?>"
+                    alt="" aria-hidden="true"
+                    width="<?= htmlspecialchars($thumbSize) ?>"
+                    height="<?= htmlspecialchars($thumbSize) ?>"
+                    class="image-lqip"
+                   />
 <? endif; ?>
                 </div>
                 <div class="image-name">

@@ -9,13 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
   imageWrappers.forEach(function(wrapper) {
     const thumb = wrapper.querySelector('.image-thumb');
 
-    console.log('XXX', {
-      complete: thumb?.complete,
-      thumb,
-      wrapper,
-      imageWrappers,
-    });
-
     if (thumb) {
       // Check if image is already cached/loaded
       if (thumb.complete) {
@@ -25,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
         thumb.addEventListener('load', function() {
           thumb.classList.add('loaded');
         });
-
         // Handle loading errors
         thumb.addEventListener('error', function() {
           // If thumbnail fails to load, keep LQIP visible

@@ -191,7 +191,7 @@ $pageTitle = $title . ': ' . $shortTitle;
 $pageDescription = $description ? $description : basename($imagePath);
 
 /** Use lqip overlay image? Otherwise the background image will be used */
-$useLqipImage = false;
+$useLqipImage = true;
 
 ?>
 <!DOCTYPE html>
@@ -245,7 +245,12 @@ $useLqipImage = false;
       alt="<?= htmlspecialchars($shortTitle) ?>"
     />
 <? if ($useLqipImage && $lqipPreviewUrl): ?>
-    <img class="image-lqip" src="<?= $lqipPreviewUrl . $vTagPostfixPlus ?>" alt="" aria-hidden="true" />
+    <img
+      class="image-lqip"
+      src="<?= $lqipPreviewUrl . $vTagPostfixPlus ?>"
+      alt=""
+      aria-hidden="true"
+    />
 <? endif; ?>
   </div>
 

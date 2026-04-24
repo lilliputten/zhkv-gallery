@@ -4,14 +4,19 @@ body {
 }
 
 .image-wrapper,
-.image-thumb {
+.image-wrapper .image-thumb {
   width: 100%;
   height: auto;
   margin: 0 auto;
   display: block;
+}
+.image-wrapper {
   background-position: center top;
   background-size: 100% auto;
   background-repeat: no-repeat;
+}
+.image-wrapper .image-thumb {
+  opacity: 1;
 }
 
 .nav-button {

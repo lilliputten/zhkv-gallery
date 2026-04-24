@@ -85,7 +85,7 @@
 .image-wrapper .image-thumb {
   position: relative;
   z-index: 2;
-  /* opacity: 0; */
+  opacity: 0;
 }
 
 /* When image loads, fade it in and hide LQIP */
