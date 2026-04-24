@@ -18,6 +18,10 @@ body {
 .image-wrapper .image-thumb {
   opacity: 1;
 }
+.image-wrapper .image-lqip {
+  transform: none; /*( Don't enlarge */
+  /* filter: blur(2px); */
+}
 
 .nav-button {
   width: 50px;

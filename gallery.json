@@ -4,7 +4,7 @@
   "useThumbRedirects": true,
   "imageFormat": "webp",
   "lqipThumbSize": 50,
-  "lqipPreviewSize": 200,
+  "lqipPreviewSize": 100,
   "thumbSize": 250,
   "previewSize": 300,
   "maxHeightRatio": 4,

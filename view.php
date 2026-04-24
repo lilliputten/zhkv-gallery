@@ -174,14 +174,13 @@ $ogImageUrl = $baseUrl . $previewUrl;
 $thumbImageUrl = $baseUrl . $thumbUrl;
 $previewImageUrl = $baseUrl . $previewUrl;
 
-// Generate LQIP preview URL on-demand (thumbnails are already cached as files by generateThumbnail)
-$lqipPreviewUrl = null;
+// Generate LQIP preview as base64 data URI on-demand (thumbnails are already cached as files by generateThumbnail)
+$lqipDataUri = null;
 try {
-  $lqipData = generateThumbnail($imagePath, 'full', $lqipPreviewSize, $config);
-  $lqipPreviewUrl = $baseUrl . $thumbsDir . '/' . $lqipData['filename'];
+  $lqipDataUri = generateBase64Thumbnail($imagePath, 'full', $lqipPreviewSize, $config);
 } catch (Exception $e) {
   // If LQIP generation fails, continue without it
-  $lqipPreviewUrl = null;
+  $lqipDataUri = null;
 }
 
 $getCurrentUrl = getCurrentUrl();
@@ -219,16 +218,13 @@ $useLqipImage = true;
   <!-- Shared headers -->
 <? include('common-headers-post.php') ?>
   <!-- Resources -->
-<? if ($useLqipImage && $lqipPreviewUrl): ?>
-  <link rel="preload" href="<?= $lqipPreviewUrl . $vTagPostfixPlus ?>" as="image">
-<? endif; ?>
   <link rel="stylesheet" href="<?= $baseUrl ?>view.css<?= $projectTagPostfix ?>" />
 <? if ($maxWidth): ?>
   <style>
     .image-wrapper {
       max-width: <?= $maxWidth ?>px;
-<? if (!$useLqipImage): ?>
-      background-image: url("<?= $lqipPreviewUrl . $vTagPostfixPlus ?>");
+<? if (!$useLqipImage && $lqipDataUri): ?>
+      background-image: url("<?= $lqipDataUri ?>");
 <? endif; ?>
     }
   </style>
@@ -236,7 +232,7 @@ $useLqipImage = true;
 </head>
 
 <body>
-  <div class="image-wrapper"<?= $useLqipImage && $lqipPreviewUrl ? ' data-lqip="true"' : '' ?>>
+  <div class="image-wrapper"<?= $useLqipImage && $lqipDataUri ? ' data-lqip="true"' : '' ?>>
     <img
       class="image-thumb"
       src="<?= $encodedPath . $vTagPostfix ?>"
@@ -244,10 +240,10 @@ $useLqipImage = true;
       loading="lazy"
       alt="<?= htmlspecialchars($shortTitle) ?>"
     />
-<? if ($useLqipImage && $lqipPreviewUrl): ?>
+<? if ($useLqipImage && $lqipDataUri): ?>
     <img
       class="image-lqip"
-      src="<?= $lqipPreviewUrl . $vTagPostfixPlus ?>"
+      src="<?= $lqipDataUri ?>"
       alt=""
       aria-hidden="true"
     />
