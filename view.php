@@ -109,6 +109,13 @@ if ($parentFolder) {
   }
 }
 
+// Prepare gallery home URL with optional folder anchor
+$galleryHomeUrl = $baseUrl;
+if ($parentFolder) {
+  // Add anchor to link to specific folder section in index.php
+  $galleryHomeUrl .= '#' . $parentFolder;
+}
+
 // Check if we have any metadata to display
 $hasMetadata = !empty($imageTitle) || !empty($description);
 
@@ -254,9 +261,9 @@ $useLqipImage = true;
 <? if ($prevViewUrl): ?>
       <a href="<?= $prevViewUrl ?>" class="nav-button" title="Previous image"><i data-lucide="arrow-left"></i></a>
 <? endif ?>
-    <a href="<?= $baseUrl ?>" class="nav-button" title="Back to the gallery"><i data-lucide="home"></i></a>
+    <a href="<?= $galleryHomeUrl ?>" class="nav-button" title="Back to the gallery"><i data-lucide="home"></i></a>
 <? if ($listUrl): ?>
-    <a href="<?= $listUrl ?>" class="nav-button" title="Back to folder list"><i data-lucide="folder-up"></i></a>
+    <a href="<?= $listUrl ?>" class="nav-button" title="Back to the folder"><i data-lucide="folder-up"></i></a>
 <? endif ?>
 <? if ($nextViewUrl): ?>
       <a href="<?= $nextViewUrl ?>" class="nav-button" title="Next image"><i data-lucide="arrow-right"></i></a>

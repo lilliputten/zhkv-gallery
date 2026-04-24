@@ -23,6 +23,9 @@ $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRe
 // Get list parameter if provided
 $listParam = isset($_GET['list']) ? $_GET['list'] : null;
 
+// Prepare gallery home URL (with optional anchor for current folder)
+$galleryHomeUrl = $baseUrl;
+
 // Get image list using the shared cache function
 $imageData = getImageList($config);
 $scanResults = $imageData['foldered'];
@@ -31,6 +34,9 @@ $scanResults = $imageData['foldered'];
 if ($listParam !== null) {
   // Decode URL encoding
   $listParam = urldecode($listParam);
+
+  // Add anchor to gallery home URL to return to this folder section
+  $galleryHomeUrl .= '#' . $listParam;
 
   // Check if the list parameter matches a folder path
   if (isset($scanResults[$listParam])) {
@@ -169,8 +175,7 @@ if (!empty($scanResults)) {
 ?>
   <!-- Shared headers -->
 <? include('common-headers-post.php') ?>
-  <link rel="stylesheet" href="<?= $baseUrl ?>styles.css?v=<?= $vTag ?>" />
-  <link rel="stylesheet" href="<?= $baseUrl ?>index.css" />
+  <link rel="stylesheet" href="<?= $baseUrl ?>index.css<?= $projectTagPostfix ?>" />
   <style>
     .image-grid {
       grid-template-columns: repeat(auto-fill, minmax(<?= $thumbSize ?>px, 1fr));
@@ -325,7 +330,7 @@ if (!empty($scanResults)) {
       <a href="<?= $folderNav['prev'] ?>" class="nav-button" title="Previous folder"><i data-lucide="arrow-left"></i></a>
 <? endif ?>
 <? if ($folderNav['hasRoot']): ?>
-    <a href="<?= $baseUrl ?>" class="nav-button" title="Back to gallery home"><i data-lucide="home"></i></a>
+    <a href="<?= $galleryHomeUrl ?>" class="nav-button" title="Back to gallery home"><i data-lucide="home"></i></a>
 <? endif ?>
 <? if ($folderNav['next']): ?>
       <a href="<?= $folderNav['next'] ?>" class="nav-button" title="Next folder"><i data-lucide="arrow-right"></i></a>

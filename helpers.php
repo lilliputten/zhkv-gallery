@@ -6,7 +6,7 @@ $isDev = ($serverPort === 8000);
 
 $basePath = str_replace('\\', '/', __DIR__);
 
-$projectTag = !$isDev ? 'v1.0.2' : '';
+$projectTag = !$isDev ? 'v1.0.2b' : '';
 $vTag = isset($config['vTag']) ? $config['vTag'] : $projectTag;
 $projectTagPostfix = !$isDev && !empty($vTag) ? '?v=' . $vTag : '';
 

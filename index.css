@@ -86,14 +86,14 @@ h1.title {
   padding: 4px 0;
   position: relative;
   max-width: 100%;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 .image-item {
   text-align: center;
   transition: all 0.2s;
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 .image-item:hover {
   opacity: 0.8;
@@ -106,9 +106,8 @@ h1.title {
   /* overflow: hidden; */
 }
 .image-item .image-wrapper {
-  background-color: #f7f7f7;
   border-radius: 4px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  /* box-shadow: 0 0 8px rgba(0,0,0,0.2); */
   border: 1px solid rgba(0,0,0,0.2);
 }
 .image-item img {
@@ -122,9 +121,7 @@ h1.title {
 /* Index-specific: square thumbnails layout */
 .image-wrapper {
   width: 100%;
-  /* padding-bottom: 100%; [> Square aspect ratio for thumbnails <] */
   border-radius: 4px;
-  background-color: #f7f7f7;
 }
 
 /* Index-specific: square thumbnails use object-fit: cover */
