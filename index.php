@@ -130,19 +130,22 @@ if (!empty($scanResults)) {
   }
 }
 
+$pageTitle = !empty($listParam) && !empty($folderData['title']) ? $folderData['title'] : $galleryTitle;
+$pageDescription = !empty($listParam) && !empty($folderData['description']) ? $folderData['description'] : $galleryDescription;
+
 ?>
 <!DOCTYPE html>
 <html>
 
 <head>
-  <title><?= prepareRichText($galleryTitle) ?></title>
+  <title><?= prepareRichText($pageTitle) ?></title>
   <!-- OpenGraph & Twitter Card Meta Tags -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="<?= prepareRichText($galleryTitle) ?>" />
-  <meta property="og:description" content="<?= prepareRichText($galleryDescription) ?>" />
+  <meta property="og:title" content="<?= prepareRichText($pageTitle) ?>" />
+  <meta property="og:description" content="<?= prepareRichText($pageDescription) ?>" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="<?= prepareRichText($galleryTitle) ?>" />
-  <meta name="twitter:description" content="<?= prepareRichText($galleryDescription) ?>" />
+  <meta name="twitter:title" content="<?= prepareRichText($pageTitle) ?>" />
+  <meta name="twitter:description" content="<?= prepareRichText($pageDescription) ?>" />
   <meta property="og:url" content="<?= htmlspecialchars($currentUrl) ?>" />
   <meta property="og:site_name" content="<?= prepareRichText($galleryTitle) ?>" />
 <?
