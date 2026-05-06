@@ -7,6 +7,18 @@ $baseUrl = getCurrentUrlPrefix();
 // Get the image path from the URL parameter
 $imagePath = isset($_GET['image']) ? $_GET['image'] : '';
 
+// Security: Validate the path to prevent directory traversal attacks
+if (empty($imagePath)) {
+  dieWithError('No image specified');
+}
+
+// Try to resolve the image path (with or without extension)
+$resolvedImagePath = resolveImagePath($imagePath);
+if ($resolvedImagePath === false) {
+  dieWithError('Image not found: ' . htmlspecialchars($imagePath));
+}
+$imagePath = $resolvedImagePath;
+
 $config = loadConfig($imagePath);
 $title = isset($config['title']) ? $config['title'] : 'Image Gallery';
 $maxWidth = isset($config['maxWidth']) ? $config['maxWidth'] : Null;
@@ -57,11 +69,6 @@ if (empty($description)) {
   $description = isset($config['description']) ? $config['description'] : '';
 }
 
-// Security: Validate the path to prevent directory traversal attacks
-if (empty($imagePath)) {
-  die('No image specified');
-}
-
 // Decode URL encoding (e.g., %20 becomes space)
 $imagePath = urldecode($imagePath);
 
@@ -70,18 +77,15 @@ $basePath = realpath($basePath);
 $fullPath = realpath($basePath . '/' . $imagePath);
 
 if ($fullPath === false || strpos($fullPath, $basePath) !== 0) {
-  die('Invalid image path');
+  dieWithError('Invalid image path');
 }
 
-// Check if file exists and is an image
-if (!file_exists($fullPath)) {
-  die('Image not found: ' . htmlspecialchars($imagePath));
-}
+// Note: Image path has already been resolved and file existence validated
 
 // Get image info to determine MIME type
 $imageInfo = getimagesize($fullPath);
 if ($imageInfo === false) {
-  die('Not a valid image file');
+  dieWithError('Not a valid image file');
 }
 
 // Set maxWidth to image width if not configured

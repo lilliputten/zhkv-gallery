@@ -172,6 +172,36 @@ function removeFileExtension($file)
 }
 
 /**
+ * Resolve image path by checking if it exists or if it needs an extension added
+ * Supports both full paths (with extension) and extension-less paths
+ *
+ * @param string $imagePath Input path (with or without extension)
+ * @return string|false Resolved path with extension, or false if no image found
+ */
+function resolveImagePath($imagePath)
+{
+  global $basePath;
+
+  $supportedExtensions = ['webp', 'jpg', 'jpeg', 'png', 'gif', 'bmp'];
+
+  // If the path already has an extension and the file exists, return it
+  if (strpos($imagePath, '.') !== false && file_exists($basePath . '/' . $imagePath)) {
+    return $imagePath;
+  }
+
+  // Try to find the image with different extensions
+  foreach ($supportedExtensions as $ext) {
+    $candidatePath = $imagePath . '.' . $ext;
+    if (file_exists($basePath . '/' . $candidatePath)) {
+      return $candidatePath;
+    }
+  }
+
+  // If no file found, return false
+  return false;
+}
+
+/**
  * Read image title and description from {IMAGE}.md file
  * Expected format:
  * ## {title}

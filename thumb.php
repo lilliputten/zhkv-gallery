@@ -8,6 +8,19 @@ $baseUrl = getCurrentUrlPrefix();
 
 // Get the image path from the URL parameter
 $imagePath = isset($_GET['image']) ? $_GET['image'] : '';
+
+// Security: Validate the path to prevent directory traversal attacks
+if (empty($imagePath)) {
+  dieWithError('No image specified');
+}
+
+// Try to resolve the image path (with or without extension)
+$resolvedImagePath = resolveImagePath($imagePath);
+if ($resolvedImagePath === false) {
+  dieWithError('Image not found: ' . htmlspecialchars($imagePath));
+}
+$imagePath = $resolvedImagePath;
+
 $mode = isset($_GET['mode']) ? $_GET['mode'] : 'thumb'; // 'thumb', 'preview', or 'full'
 $size = isset($_GET['size']) ? (int) $_GET['size'] : null;
 

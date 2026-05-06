@@ -16,6 +16,7 @@ $previewSize = isset($config['previewSize']) ? $config['previewSize'] : 300;
 $lqipThumbSize = isset($config['lqipThumbSize']) ? $config['lqipThumbSize'] : 20; // Extra-small for LQIP
 $maxHeightRatio = isset($config['maxHeightRatio']) ? $config['maxHeightRatio'] : Null;
 $useRedirectMode = !$isDev && isset($config['useRedirectMode']) ? $config['useRedirectMode'] : false;
+$thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs';
 // $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.thumbs';
 // $indexCacheValidMins = isset($config['indexCacheValidMins']) ? $config['indexCacheValidMins'] : 30;
 // $indexCache = isset($config['indexCache']) ? $config['indexCache'] : '.cache.index';
@@ -151,7 +152,7 @@ $pageDescription = !empty($listParam) && !empty($folderData['description']) ? $f
 <?
 
   if ($firstImagePath && $firstImageInfo) {
-    $encodedPath = str_replace('%2F', '/', rawurlencode($firstImagePath));
+    $encodedPath = str_replace('%2F', '/', rawurlencode(removeFileExtension($firstImagePath)));
     $previewUrl = 'thumb.php?mode=preview&image=' . $encodedPath;
     $thumbUrl = 'thumb.php?image=' . $encodedPath;
     if ($useRedirectMode) {
@@ -235,7 +236,6 @@ $pageDescription = !empty($listParam) && !empty($folderData['description']) ? $f
 <? if (!$isCurrentList): ?>
             </a>
 <? endif; ?>
-
             <a class="anchor-link" href="#<?= $folderPath ?>" title="Anchor link to the section"><i data-lucide="link"></i></a>
           </h2>
 <? if (!empty($folderData['description'])): ?>
@@ -247,7 +247,7 @@ $pageDescription = !empty($listParam) && !empty($folderData['description']) ? $f
             <div class="image-item">
 <?
               $encodedPath = str_replace('%2F', '/', rawurlencode($image['path']));
-              $thumbsDir = isset($config['thumbsDir']) ? $config['thumbsDir'] : '.cache.thumbs';
+              $encodedPath = removeFileExtension($encodedPath);
 
               // Determine which approach to use for thumbnail URLs
               $useThumbRedirects = isset($config['useThumbRedirects']) ? $config['useThumbRedirects'] : false;
