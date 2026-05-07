@@ -13,6 +13,8 @@ $projectTagPostfix = !$isDev && !empty($vTag) ? '?v=' . $vTag : '';
 $vTagPostfix = ''; // isset($vTag) ? '?v=' . $vTag : '';
 $vTagPostfixPlus = ''; // isset($vTag) ? ($useRedirectMode ? '&v=' . $vTag : $vTagPostfix) : '';
 
+$thumbImageType = 'png';
+
 /**
  * Load configuration from a folder by merging gallery.json and gallery.local.json files
  * This function accepts the config array by reference and extends it with folder-specific config
@@ -171,6 +173,12 @@ function removeFileExtension($file)
   return ($fileDir !== '.') ? $fileDir . '/' . $filePathWithoutExt : $filePathWithoutExt;
 }
 
+function replaceFileExtension($file, $ext)
+{
+  $cleanFileName = removeFileExtension($file);
+  return $cleanFileName . '.' . $ext;
+}
+
 /**
  * Resolve image path by checking if it exists or if it needs an extension added
  * Supports both full paths (with extension) and extension-less paths
@@ -184,9 +192,15 @@ function resolveImagePath($imagePath)
 
   $supportedExtensions = ['webp', 'jpg', 'jpeg', 'png', 'gif', 'bmp'];
 
+  $hasExt = strpos($imagePath, '.') !== false;
+
   // If the path already has an extension and the file exists, return it
-  if (strpos($imagePath, '.') !== false && file_exists($basePath . '/' . $imagePath)) {
+  if ($hasExt && file_exists($basePath . '/' . $imagePath)) {
     return $imagePath;
+  }
+
+  if ($hasExt) {
+    $imagePath = removeFileExtension($imagePath);
   }
 
   // Try to find the image with different extensions
@@ -507,7 +521,7 @@ function prepareRichText($description, $specialChars = true) {
  * @throws Exception If image processing fails
  */
 function generateThumbnail($imagePath, $mode = 'thumb', $size = 150, $config = null, $outputFormat = null) {
-  global $isDev;
+  global $isDev, $thumbImageType;
 
   // Load config if not provided
   if ($config === null) {
@@ -602,7 +616,7 @@ function generateThumbnail($imagePath, $mode = 'thumb', $size = 150, $config = n
 
     // Determine output format
     // Priority: parameter > config > original format
-    $finalFormat = $outputFormat ?: $configImageFormat ?: $fileExt;
+    $finalFormat = $outputFormat ?: $configImageFormat ?: $fileExt ?: $thumbImageType;
 
     // Map MIME type to extension if using original format
     if (!$outputFormat && !$configImageFormat) {

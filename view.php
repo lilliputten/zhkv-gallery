@@ -181,9 +181,9 @@ if ($useRedirectMode) {
 }
 
 // Build URLs without escaping issues
-$ogImageUrl = $baseUrl . $previewUrl;
-$thumbImageUrl = $baseUrl . $thumbUrl;
-$previewImageUrl = $baseUrl . $previewUrl;
+// $ogImageUrl = $baseUrl . $previewUrl;
+$thumbImageUrl = replaceFileExtension($baseUrl . $thumbUrl, $thumbImageType);
+// $previewImageUrl = $baseUrl . $previewUrl;
 
 // Generate LQIP preview as base64 data URI on-demand (thumbnails are already cached as files by generateThumbnail)
 $lqipDataUri = null;
@@ -215,7 +215,7 @@ $useLqipImage = true;
   <meta property="og:site_name" content="<?= prepareRichText($shortTitle) ?>" />
   <meta property="og:title" content="<?= prepareRichText($shortTitle) ?>" />
   <meta property="og:description" content="<?= prepareRichText($pageDescription) ?>" />
-  <meta property="og:image" content="<?= $thumbImageUrl . $vTagPostfixPlus ?>" />
+  <meta property="og:image" content="<?= $thumbImageUrl ?>" />
   <meta property="og:image:width" content="<?= $thumbSize ?>" />
   <meta property="og:image:height" content="<?= $thumbSize ?>" />
   <meta property="og:url" content="<?= htmlspecialchars($getCurrentUrl) ?>" />
@@ -223,7 +223,7 @@ $useLqipImage = true;
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="<?= prepareRichText($shortTitle) ?>" />
   <meta name="twitter:description" content="<?= prepareRichText($pageDescription) ?>" />
-  <meta name="twitter:image" content="<?= $thumbImageUrl . $vTagPostfixPlus ?>" />
+  <meta name="twitter:image" content="<?= $thumbImageUrl ?>" />
   <meta name="twitter:image:width" content="<?= $thumbSize ?>" />
   <meta name="twitter:image:height" content="<?= $thumbSize ?>" />
   <!-- Shared headers -->
