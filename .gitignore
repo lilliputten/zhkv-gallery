@@ -4,5 +4,7 @@ gallery.md
 thumbs/*
 .thumbs
 .cache*
-*Previews*
+*-Previews*
+*-page*
+*-details*
 favicon.ico

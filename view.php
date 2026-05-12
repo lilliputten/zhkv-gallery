@@ -263,14 +263,14 @@ $useLqipImage = true;
 
   <div class="float-panel left bottom">
 <? if ($prevViewUrl): ?>
-      <a href="<?= $prevViewUrl ?>" class="nav-button" title="Previous image"><i data-lucide="arrow-left"></i></a>
+      <a href="<?= removeFileExtension($prevViewUrl) ?>" class="nav-button" title="Previous image"><i data-lucide="arrow-left"></i></a>
 <? endif ?>
     <a href="<?= $galleryHomeUrl ?>" class="nav-button" title="Back to the gallery"><i data-lucide="home"></i></a>
 <? if ($listUrl): ?>
     <a href="<?= $listUrl ?>" class="nav-button" title="Back to the folder"><i data-lucide="folder-up"></i></a>
 <? endif ?>
 <? if ($nextViewUrl): ?>
-      <a href="<?= $nextViewUrl ?>" class="nav-button" title="Next image"><i data-lucide="arrow-right"></i></a>
+      <a href="<?= removeFileExtension($nextViewUrl) ?>" class="nav-button" title="Next image"><i data-lucide="arrow-right"></i></a>
 <? endif ?>
   </div>
 
